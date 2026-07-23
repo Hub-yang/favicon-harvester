@@ -16,9 +16,13 @@
     "lint:fix": "eslint . --fix",
     "postinstall": "wxt prepare",
     "prepare": "husky",
-    "commitlint": "commitlint --edit"
+    "commitlint": "commitlint --edit",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "dependencies": {
+    "@vueuse/core": "^14.3.0",
+    "@webext-core/messaging": "^3.0.2",
     "vue": "^3.5.29"
   },
   "devDependencies": {
@@ -26,11 +30,16 @@
     "@commitlint/cli": "^21.2.1",
     "@commitlint/config-conventional": "^21.2.0",
     "@huberyyang/todo-scripts": "^1.0.12",
+    "@vue/test-utils": "^2.4.11",
     "@wxt-dev/module-vue": "^1.0.3",
+    "@wxt-dev/unocss": "^1.0.1",
     "eslint": "^10.7.0",
+    "happy-dom": "^20.11.0",
     "husky": "^9.1.7",
     "lint-staged": "^17.1.1",
     "typescript": "^5.9.3",
+    "unocss": "^66.7.5",
+    "vitest": "^4.1.10",
     "vue-tsc": "^3.2.5",
     "wxt": "^0.20.27"
   },
