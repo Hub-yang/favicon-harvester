@@ -1,0 +1,41 @@
+{
+  "name": "favicon-harvester",
+  "type": "module",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Chrome 插件（Manifest V3）：获取当前标签页站点的图标资源，去重后在面板中展示，支持逐个下载",
+  "scripts": {
+    "dev": "wxt",
+    "dev:firefox": "wxt -b firefox",
+    "build": "wxt build",
+    "build:firefox": "wxt build -b firefox",
+    "zip": "wxt zip",
+    "zip:firefox": "wxt zip -b firefox",
+    "compile": "vue-tsc --noEmit",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "postinstall": "wxt prepare",
+    "prepare": "husky",
+    "commitlint": "commitlint --edit"
+  },
+  "dependencies": {
+    "vue": "^3.5.29"
+  },
+  "devDependencies": {
+    "@antfu/eslint-config": "^9.2.0",
+    "@commitlint/cli": "^21.2.1",
+    "@commitlint/config-conventional": "^21.2.0",
+    "@huberyyang/todo-scripts": "^1.0.12",
+    "@wxt-dev/module-vue": "^1.0.3",
+    "eslint": "^10.7.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^17.1.1",
+    "typescript": "^5.9.3",
+    "vue-tsc": "^3.2.5",
+    "wxt": "^0.20.27"
+  },
+  "lint-staged": {
+    "*": "eslint . --fix",
+    "*.{ts,vue}": "bash -c 'vue-tsc --noEmit'"
+  }
+}

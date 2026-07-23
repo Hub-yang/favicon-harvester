@@ -1,0 +1,10 @@
+shellEmulator: true
+
+trustPolicy: no-downgrade
+
+allowBuilds:
+  esbuild: true
+  spawn-sync: true
+
+overrides:
+  '@webext-core/isolated-element': 1.1.4
