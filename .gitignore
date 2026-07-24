@@ -15,6 +15,9 @@ stats-*.json
 web-ext.config.ts
 coverage
 
+# 个人学习笔记，不纳入版本管理
+study.md
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
