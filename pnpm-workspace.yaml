@@ -4,6 +4,7 @@ trustPolicy: no-downgrade
 
 allowBuilds:
   esbuild: true
+  sharp: true
   spawn-sync: true
 
 overrides:
