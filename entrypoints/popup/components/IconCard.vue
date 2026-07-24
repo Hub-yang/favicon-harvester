@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import type { IconCandidate } from '@/utils/types'
 import { computed, ref } from 'vue'
-import { buildFilename } from '@/utils/icon-naming'
+import { buildFilename, resolveIconExtension } from '@/utils/icon-naming'
 import { sendMessage } from '@/utils/messaging'
 
 const props = defineProps<{ candidate: IconCandidate, domain: string }>()
@@ -34,6 +34,9 @@ const sizeLabel = computed(() => {
   return sourceDetail ?? '尺寸未知'
 })
 
+// 格式标签：与下载文件名的扩展名同源，保证显示格式与实际下载扩展名一致
+const formatLabel = computed(() => resolveIconExtension(props.candidate).toUpperCase())
+
 async function handleDownload() {
   if (downloadState.value === 'downloading')
     return
@@ -46,7 +49,7 @@ async function handleDownload() {
 </script>
 
 <template>
-  <li class="flex items-center gap-3 px-3 py-2 border-b border-[var(--fh-border)]">
+  <li class="flex items-center gap-3 px-3 py-2">
     <!-- 缩略图：棋盘格底衬 + object-contain，img 直连候选 URL 不受 CORS 限制 -->
     <div class="fh-checker flex-none w-10 h-10 rounded flex items-center justify-center overflow-hidden">
       <img
@@ -65,7 +68,7 @@ async function handleDownload() {
         {{ sizeLabel }}
       </div>
       <div class="text-[11px] text-[var(--fh-muted)]">
-        {{ SOURCE_LABEL[candidate.source] }}
+        {{ SOURCE_LABEL[candidate.source] }} · {{ formatLabel }}
       </div>
     </div>
 
