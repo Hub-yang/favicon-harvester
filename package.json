@@ -18,7 +18,8 @@
     "prepare": "husky",
     "commitlint": "commitlint --edit",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
     "@vueuse/core": "^14.3.0",
@@ -30,6 +31,8 @@
     "@commitlint/cli": "^21.2.1",
     "@commitlint/config-conventional": "^21.2.0",
     "@huberyyang/todo-scripts": "^1.0.12",
+    "@vitejs/plugin-vue": "^6.0.8",
+    "@vitest/coverage-v8": "^4.1.10",
     "@vue/test-utils": "^2.4.11",
     "@wxt-dev/module-vue": "^1.0.3",
     "@wxt-dev/unocss": "^1.0.1",
