@@ -5,10 +5,10 @@ import { buildFilename, resolveIconExtension } from '@/utils/icon-naming'
 import { sendMessage } from '@/utils/messaging'
 
 const props = defineProps<{ candidate: IconCandidate, domain: string }>()
+const emit = defineEmits<{ loadError: [url: string] }>()
 
 type DownloadState = 'idle' | 'downloading' | 'done' | 'error'
 const downloadState = ref<DownloadState>('idle')
-const imageFailed = ref(false)
 
 // 来源的中文/可读标签
 const SOURCE_LABEL: Record<IconCandidate['source'], string> = {
@@ -59,13 +59,11 @@ async function handleDownload() {
     <!-- 缩略图：棋盘格底衬 + object-contain，img 直连候选 URL 不受 CORS 限制 -->
     <div class="fh-checker flex-none w-10 h-10 rounded flex items-center justify-center overflow-hidden">
       <img
-        v-if="!imageFailed"
         :src="candidate.url"
         alt=""
         class="max-w-full max-h-full object-contain"
-        @error="imageFailed = true"
+        @error="emit('loadError', candidate.url)"
       >
-      <span v-else class="text-[10px] text-[var(--fh-muted)]">失败</span>
     </div>
 
     <!-- 尺寸 + 来源 -->

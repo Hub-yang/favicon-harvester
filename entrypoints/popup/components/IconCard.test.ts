@@ -41,13 +41,12 @@ describe('iconCard', () => {
       expect(wrapper.text()).toContain('PNG')
     })
 
-    it('缩略图加载失败时降级显示"失败"占位', async () => {
+    it('缩略图加载失败时 emit load-error，交给父组件摘除该候选', async () => {
       const wrapper = mountCard({ url: 'https://example.com/broken.png', source: 'link' })
 
       await wrapper.get('img').trigger('error')
 
-      expect(wrapper.find('img').exists()).toBe(false)
-      expect(wrapper.text()).toContain('失败')
+      expect(wrapper.emitted('loadError')).toEqual([['https://example.com/broken.png']])
     })
   })
 
