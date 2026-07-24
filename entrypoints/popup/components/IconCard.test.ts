@@ -87,5 +87,17 @@ describe('iconCard', () => {
 
       expect(wrapper.get('button').text()).toBe('重试')
     })
+
+    it('sendMessage 本身 reject（如扩展上下文失效）时按钮文案变为"重试"而非卡死', async () => {
+      vi.mocked(sendMessage).mockRejectedValue(new Error('Extension context invalidated'))
+
+      const wrapper = mountCard({ url: 'https://example.com/a.png', source: 'link' })
+      await wrapper.get('button').trigger('click')
+      await flushPromises()
+
+      const button = wrapper.get('button')
+      expect(button.text()).toBe('重试')
+      expect(button.attributes('disabled')).toBeUndefined()
+    })
   })
 })

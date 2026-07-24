@@ -15,9 +15,14 @@ function isWebManifestIcon(value: unknown): value is WebManifestIcon {
   return typeof value === 'object' && value !== null
 }
 
+const MANIFEST_FETCH_TIMEOUT_MS = 5000
+
 export async function fetchManifestCandidates(manifestHref: string): Promise<IconCandidate[]> {
+  const controller = new AbortController()
+  const timer = setTimeout(() => controller.abort(), MANIFEST_FETCH_TIMEOUT_MS)
+
   try {
-    const response = await fetch(manifestHref)
+    const response = await fetch(manifestHref, { signal: controller.signal })
     if (!response.ok)
       return []
 
@@ -44,5 +49,8 @@ export async function fetchManifestCandidates(manifestHref: string): Promise<Ico
   }
   catch {
     return []
+  }
+  finally {
+    clearTimeout(timer)
   }
 }

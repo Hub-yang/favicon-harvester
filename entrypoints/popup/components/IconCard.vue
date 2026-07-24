@@ -43,8 +43,14 @@ async function handleDownload() {
   downloadState.value = 'downloading'
   // 文件名由统一的 buildFilename 计算，domain 由父组件算好传入，避免重复命名逻辑
   const filename = buildFilename(props.domain, props.candidate)
-  const result = await sendMessage('downloadIcon', { url: props.candidate.url, filename })
-  downloadState.value = result.success ? 'done' : 'error'
+  try {
+    const result = await sendMessage('downloadIcon', { url: props.candidate.url, filename })
+    downloadState.value = result.success ? 'done' : 'error'
+  }
+  catch {
+    // sendMessage 自身可能因扩展上下文失效等传输层原因 reject，非 downloadIconFile 内部错误
+    downloadState.value = 'error'
+  }
 }
 </script>
 
