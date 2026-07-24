@@ -44,14 +44,16 @@ const candidates = computed(() => result.value?.candidates ?? [])
 </script>
 
 <template>
-  <div class="w-[360px] text-[13px]">
-    <header class="px-3 py-2 font-semibold border-b border-[var(--fh-border)]">
-      Favicon Harvester
+  <div class="w-[300px] text-[13px]">
+    <header class="flex items-center justify-between px-3 py-2 border-b border-[var(--fh-border)]">
+      <span class="font-semibold">图标提取器</span>
+      <!-- 作者信息：当前为纯文本，后续替换为主页链接 <a :href="..."> -->
+      <span class="text-[11px] text-[var(--fh-muted)]">by HuberyYang</span>
     </header>
 
     <StatusBanner v-if="bannerState" :state="bannerState" />
 
-    <ul class="m-0 p-0 list-none">
+    <ul class="m-0 p-0 list-none divide-y divide-[var(--fh-border)]">
       <IconCard
         v-for="candidate in candidates"
         :key="candidate.url"

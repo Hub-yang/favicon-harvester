@@ -13,7 +13,7 @@ const MIME_EXTENSION_MAP: Record<string, string> = {
 const KNOWN_URL_EXTENSIONS = new Set(['png', 'svg', 'ico', 'jpg', 'jpeg', 'gif', 'webp'])
 const DEFAULT_EXTENSION = 'png'
 
-function resolveExtension(candidate: IconCandidate): string {
+export function resolveIconExtension(candidate: IconCandidate): string {
   if (candidate.mimeType) {
     const mappedExtension = MIME_EXTENSION_MAP[candidate.mimeType.toLowerCase()]
     if (mappedExtension)
@@ -29,10 +29,10 @@ function resolveExtension(candidate: IconCandidate): string {
 
 export function buildFilename(domain: string, candidate: IconCandidate): string {
   if (candidate.width !== undefined && candidate.height !== undefined)
-    return `${domain}-${candidate.source}-${candidate.width}x${candidate.height}.${resolveExtension(candidate)}`
+    return `${domain}-${candidate.source}-${candidate.width}x${candidate.height}.${resolveIconExtension(candidate)}`
 
   if (candidate.source === 'well-known' && candidate.sourceDetail)
     return `${domain}-${candidate.sourceDetail}`
 
-  return `${domain}-${candidate.source}.${resolveExtension(candidate)}`
+  return `${domain}-${candidate.source}.${resolveIconExtension(candidate)}`
 }
