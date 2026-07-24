@@ -34,6 +34,7 @@
     "@vitejs/plugin-vue": "^6.0.8",
     "@vitest/coverage-v8": "^4.1.10",
     "@vue/test-utils": "^2.4.11",
+    "@wxt-dev/auto-icons": "^1.1.1",
     "@wxt-dev/module-vue": "^1.0.3",
     "@wxt-dev/unocss": "^1.0.1",
     "eslint": "^10.7.0",

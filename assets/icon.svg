@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 128 128">
+  <defs>
+    <linearGradient id="gradBlue" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#60A5FA" />
+      <stop offset="1" stop-color="#1D4ED8" />
+    </linearGradient>
+    <linearGradient id="gradBlueDark" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#2563EB" />
+      <stop offset="1" stop-color="#0B1E4D" />
+    </linearGradient>
+    <filter id="softShadow" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="3" stdDeviation="3" flood-color="#0B1E4D" flood-opacity="0.35" />
+    </filter>
+  </defs>
+  <rect x="8" y="8" width="80" height="80" rx="16" fill="#BFDBFE" filter="url(#softShadow)" />
+  <rect x="24" y="24" width="80" height="80" rx="16" fill="url(#gradBlue)" filter="url(#softShadow)" />
+  <rect x="40" y="40" width="80" height="80" rx="16" fill="url(#gradBlueDark)" filter="url(#softShadow)" />
+  <line x1="80" y1="52" x2="80" y2="86" stroke="#FFFFFF" stroke-width="15" stroke-linecap="round" />
+  <path d="M59 78 L80 104 L101 78 Z" fill="#FFFFFF" />
+  <line x1="58" y1="114" x2="102" y2="114" stroke="#FFFFFF" stroke-width="12" stroke-linecap="round" />
+</svg>

@@ -11,7 +11,7 @@
 3. 面板展示**所有**去重后的候选图标，各自独立可下载，不做"只保留最佳一个"的自动筛选。
 4. manifest 权限最小化：只用 `activeTab` + `scripting` + `downloads`，不声明 `host_permissions`，不声明 `content_scripts`。
 5. **已确认的执行顺序**：先实现全部 utils 核心模块，再统一集中补单元测试（非严格 TDD）。
-6. 本轮跳过 `@wxt-dev/auto-icons`（插件工具栏图标生成），继续用脚手架自带占位图标；不影响核心的"网站 favicon 抓取"功能。
+6. 已引入 `@wxt-dev/auto-icons` 生成插件工具栏图标：源图为 `assets/icon.svg`（蓝色系「图标堆叠 + 色块内下载箭头」设计，不用独立徽标或文字，保证 16px 工具栏尺寸下的可辨识度），构建时自动生成 16/32/48/128 四个尺寸并写入 `manifest.icons`，不再手动维护 `public/icon/` 下的占位 PNG。
 
 **关键设计判断（实现时直接采用，不再讨论变更）**：
 
