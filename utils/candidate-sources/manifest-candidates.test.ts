@@ -56,6 +56,19 @@ describe('fetchManifestCandidates', () => {
     await expect(fetchManifestCandidates('https://example.com/site.webmanifest')).resolves.toEqual([])
   })
 
+  it('fetch 挂起超时会被 abort 并返回空数组，不会一直等待', async () => {
+    vi.useFakeTimers()
+    vi.stubGlobal('fetch', vi.fn((_url: string, init?: RequestInit) => new Promise((_resolve, reject) => {
+      init?.signal?.addEventListener('abort', () => reject(new DOMException('aborted', 'AbortError')))
+    })))
+
+    const pending = fetchManifestCandidates('https://example.com/site.webmanifest')
+    await vi.advanceTimersByTimeAsync(5000)
+
+    await expect(pending).resolves.toEqual([])
+    vi.useRealTimers()
+  })
+
   it('icons 字段缺失时返回空数组', async () => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(jsonResponse({})))
 
