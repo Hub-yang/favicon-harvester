@@ -57,6 +57,7 @@ utils/
 
 ## 相关文档
 
+- [PUBLISHING.md](./PUBLISHING.md)：Chrome 网上应用店首次提交上架、后续版本迭代发布、审核被打回的排查流程。
 - [study.md](./study.md)：本项目的开发学习笔记，按知识主题整理（Manifest V3、WXT、消息传递、图标发现算法、测试策略等），适合复习或第一次接触 Chrome 插件开发时系统学习。
 
 ## 测试
