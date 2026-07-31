@@ -5,12 +5,17 @@ import StatusBanner from './components/StatusBanner.vue'
 import { useIconScan } from './composables/useIconScan'
 
 const { loading, restricted, candidates, domain, retrying, exhausted, showRetryPanel, retry, removeCandidate } = useIconScan()
+
+const appVersion = browser.runtime.getManifest().version
 </script>
 
 <template>
   <div class="w-[300px] text-[13px]">
     <header class="flex items-center justify-between px-3 py-2 border-b border-[var(--fh-border)]">
-      <span class="font-semibold">图标提取器</span>
+      <div class="flex items-center gap-1">
+        <span class="font-semibold">图标提取器</span>
+        <span class="text-[11px] text-[var(--fh-muted)]">v{{ appVersion }}</span>
+      </div>
       <!-- 作者信息：当前为纯文本，后续替换为主页链接 <a :href="..."> -->
       <span class="text-[11px] text-[var(--fh-muted)]">by HuberyYang</span>
     </header>

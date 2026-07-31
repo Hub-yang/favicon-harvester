@@ -38,6 +38,12 @@ function stubActiveTab(tab: Browser.tabs.Tab) {
 describe('app', () => {
   beforeEach(() => {
     fakeBrowser.reset()
+    // fakeBrowser.runtime.getManifest 默认未实现，App.vue 头部展示版本号需要用到，这里手动 stub
+    vi.spyOn(fakeBrowser.runtime, 'getManifest').mockReturnValue({
+      manifest_version: 3,
+      name: '图标提取器',
+      version: '0.1.0',
+    } as any)
     // 默认让候选都验证通过，未特别覆盖 verifyImageLoadable 的用例保持原有断言不变
     vi.mocked(verifyImageLoadable).mockResolvedValue(true)
   })
@@ -45,6 +51,15 @@ describe('app', () => {
   afterEach(() => {
     vi.restoreAllMocks()
     vi.clearAllMocks()
+  })
+
+  it('头部标题右侧展示 manifest 中的版本号', () => {
+    stubActiveTab(makeTab())
+    vi.mocked(sendMessage).mockReturnValue(new Promise(() => {}) as ReturnType<typeof sendMessage>)
+
+    const wrapper = mount(App)
+
+    expect(wrapper.find('header').text()).toContain('v0.1.0')
   })
 
   it('挂载后、扫描返回前处于 loading 态', () => {
