@@ -1,14 +1,12 @@
 import type { IconCandidate } from './types'
+import { fetchWithTimeout } from './fetch-with-timeout'
 import { measureRasterSize } from './image-size'
 import { sniffMimeFromBytes } from './mime-sniff'
 import { parseSvgSize } from './svg-size'
 
 export async function probeCandidate(candidate: IconCandidate, timeoutMs = 5000): Promise<IconCandidate | undefined> {
-  const controller = new AbortController()
-  const timer = setTimeout(() => controller.abort(), timeoutMs)
-
   try {
-    const response = await fetch(candidate.url, { method: 'GET', signal: controller.signal })
+    const response = await fetchWithTimeout(candidate.url, timeoutMs)
     if (!response.ok)
       return undefined
 
@@ -34,8 +32,5 @@ export async function probeCandidate(candidate: IconCandidate, timeoutMs = 5000)
   }
   catch {
     return undefined
-  }
-  finally {
-    clearTimeout(timer)
   }
 }

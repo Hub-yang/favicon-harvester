@@ -1,10 +1,7 @@
-export interface ParsedSizes {
-  width: number
-  height: number
-}
+import type { Size } from '../types'
 
 /** 解析 <link sizes> / manifest icons[].sizes 形如 "180x180" 或多值空格分隔字符串，取第一个 */
-export function parseSizesAttribute(sizes: string | undefined): ParsedSizes | undefined {
+export function parseSizesAttribute(sizes: string | undefined): Size | undefined {
   if (!sizes)
     return undefined
 

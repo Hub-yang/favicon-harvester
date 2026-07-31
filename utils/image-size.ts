@@ -1,9 +1,6 @@
-export interface RasterSize {
-  width: number
-  height: number
-}
+import type { Size } from './types'
 
-export async function measureRasterSize(blob: Blob): Promise<RasterSize | undefined> {
+export async function measureRasterSize(blob: Blob): Promise<Size | undefined> {
   try {
     const bitmap = await createImageBitmap(blob)
     const size = { width: bitmap.width, height: bitmap.height }

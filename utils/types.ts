@@ -1,3 +1,9 @@
+/** 宽高尺寸（像素） */
+export interface Size {
+  width: number
+  height: number
+}
+
 /** 图标候选的来源分类 */
 export type IconSourceCategory = 'link' | 'manifest' | 'well-known' | 'tab'
 
