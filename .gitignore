@@ -18,6 +18,9 @@ coverage
 # 个人学习笔记，不纳入版本管理
 study.md
 
+# AI 协作约定文档，仅本地使用，不随开源仓库分发
+CLAUDE.md
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
