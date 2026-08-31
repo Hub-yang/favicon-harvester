@@ -3,10 +3,10 @@
 <p align="center">把一个网站正在用的图标，全都挖出来。</p>
 
 <p align="center">
-  <a href="https://github.com/Hub-yang/favicon-harvester/releases"><img src="https://img.shields.io/github/v/release/Hub-yang/favicon-harvester?style=flat-square&color=1f6feb" alt="Release"></a>
-  <a href="https://github.com/Hub-yang/favicon-harvester/actions/workflows/release.yml"><img src="https://img.shields.io/github/actions/workflow/status/Hub-yang/favicon-harvester/release.yml?style=flat-square" alt="CI"></a>
-  <a href="./LICENSE"><img src="https://img.shields.io/github/license/Hub-yang/favicon-harvester?style=flat-square" alt="License"></a>
-  <img src="https://img.shields.io/badge/manifest-v3-brightgreen?style=flat-square" alt="Manifest V3">
+  <a href="https://github.com/Hub-yang/favicon-harvester/releases"><img src="https://img.shields.io/github/v/release/Hub-yang/favicon-harvester?style=flat-square&color=1f6feb&logo=github&logoColor=white" alt="Release"></a>
+  <a href="https://github.com/Hub-yang/favicon-harvester/actions/workflows/release.yml"><img src="https://img.shields.io/github/actions/workflow/status/Hub-yang/favicon-harvester/release.yml?style=flat-square&logo=githubactions&logoColor=white" alt="CI"></a>
+  <a href="./LICENSE"><img src="https://img.shields.io/github/license/Hub-yang/favicon-harvester?style=flat-square&logo=opensourceinitiative&logoColor=white" alt="License"></a>
+  <img src="https://img.shields.io/badge/manifest-v3-brightgreen?style=flat-square&logo=googlechrome&logoColor=white" alt="Manifest V3">
 </p>
 
 <p align="center">简体中文 | <a href="./README.en.md">English</a></p>
@@ -15,7 +15,7 @@
 <p align="center"><img src="./docs/screenshot.png" width="320" alt="面板截图"></p>
 -->
 
-## 这插件解决什么问题
+## 🔍 这插件解决什么问题
 
 想拿到某个网站的图标，通常得这么干：F12 打开 Elements，在 `<head>` 里翻 `<link rel="icon">`；翻不到就去猜 `/favicon.ico`；想要大尺寸的还得顺着 `<link rel="manifest">` 找到它的 Web App Manifest，再从 JSON 里一个个把 URL 抠出来。
 
@@ -23,7 +23,7 @@
 
 这插件把这套流程压成一次点击。
 
-## 特性
+## 🧩 特性
 
 - **四路并行发现**。页面的 `<link>` 标签、Web App Manifest、`/favicon.ico` 这类约定俗成的路径、以及浏览器自己缓存的 `tab.favIconUrl`，四个来源同时探。
 - **只给活的**。候选先在后台发请求确认可达，再在面板里用 `<img>` 真渲染一遍，两关都过了才会出现在列表上。那种"请求通了但图是裂的"会被挡在外面。
@@ -32,7 +32,7 @@
 - **只碰当前这一个标签页**。manifest 里只声明了 `activeTab`、`scripting`、`downloads` 三个权限，没有 `host_permissions`。不点插件图标，它一行代码都不会跑。
 - **不连第三方**。所有图标地址都来自网站自己，不经过 Google S2 之类的兜底服务。你查了哪个网站，只有你自己知道。
 
-## 安装
+## 📦 安装
 
 ### 从 Release 装
 
@@ -49,11 +49,11 @@ pnpm build      # 产物在 .output/chrome-mv3
 
 然后按上面第 2、3 步加载 `.output/chrome-mv3`。开发调试用 `pnpm dev`，它会自动开一个装好扩展的 Chrome 实例，改代码即时热更新。
 
-## 用法
+## 🖱 用法
 
 打开任意网页 → 点工具栏上的插件图标 → 面板里挑图标，单个下载或一次全部下载，也可以只复制某个图标的地址。
 
-## 它是怎么找图标的
+## 🔬 它是怎么找图标的
 
 点击图标后，background 同时从四个地方收集候选：
 
@@ -68,13 +68,13 @@ pnpm build      # 产物在 .output/chrome-mv3
 
 到这一步还不够。后台的 fetch 探测通过，不代表 popup 里的 `<img>` 能把图渲染出来：两者请求上下文不同，`<img>` 会带 Referer，可能正好撞上目标站的防盗链。所以候选送进面板后还会再做一次真实渲染验证，裂掉的当场剔除。
 
-## 已知边界
+## ⚠️ 已知边界
 
 - `chrome://`、Chrome 应用商店等受限页面扫不了。插件会明说，不会让你对着转圈等。
 - 只认网站自己声明的图标。一个站点既没有 `<link>`、没有 manifest、连 `/favicon.ico` 都没有的话，那就是真找不到——插件不会去第三方服务替它编一个出来。
 - 不做格式转换。想要 PNG 版的 SVG 图标，得自己动手。
 
-## 开发
+## 🛠 开发
 
 技术栈是 [WXT](https://wxt.dev) + Vue 3 `<script setup>` + TypeScript + UnoCSS + Vitest。
 
@@ -105,6 +105,19 @@ utils/
 
 发布到 Chrome 网上应用店的完整流程见 [PUBLISHING.md](./PUBLISHING.md)。
 
-## License
+## 🤝 参与贡献
+
+欢迎提 Issue 和 PR。动手之前建议先开个 Issue 聊聊思路，免得白做。
+
+```bash
+pnpm install
+pnpm dev
+```
+
+提交前跑一遍 `pnpm lint && pnpm compile && pnpm test`。提交信息遵循 [Conventional Commits](https://www.conventionalcommits.org/zh-hans/)，husky 会在本地校验，不合规的会被直接拦下。
+
+有两类改动不会被接受，先说在前面：**引入第三方图标兜底服务**（比如 Google S2），以及**替用户自动挑选"最佳"图标**。前者意味着你浏览了哪些站点会泄露给第三方，后者是这个插件刻意不做的事——判断哪个图标合用是使用者的权利。
+
+## 📄 License
 
 [MIT](./LICENSE) © Hubery Yang

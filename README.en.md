@@ -3,10 +3,10 @@
 <p align="center">Pull every icon a site is actually using.</p>
 
 <p align="center">
-  <a href="https://github.com/Hub-yang/favicon-harvester/releases"><img src="https://img.shields.io/github/v/release/Hub-yang/favicon-harvester?style=flat-square&color=1f6feb" alt="Release"></a>
-  <a href="https://github.com/Hub-yang/favicon-harvester/actions/workflows/release.yml"><img src="https://img.shields.io/github/actions/workflow/status/Hub-yang/favicon-harvester/release.yml?style=flat-square" alt="CI"></a>
-  <a href="./LICENSE"><img src="https://img.shields.io/github/license/Hub-yang/favicon-harvester?style=flat-square" alt="License"></a>
-  <img src="https://img.shields.io/badge/manifest-v3-brightgreen?style=flat-square" alt="Manifest V3">
+  <a href="https://github.com/Hub-yang/favicon-harvester/releases"><img src="https://img.shields.io/github/v/release/Hub-yang/favicon-harvester?style=flat-square&color=1f6feb&logo=github&logoColor=white" alt="Release"></a>
+  <a href="https://github.com/Hub-yang/favicon-harvester/actions/workflows/release.yml"><img src="https://img.shields.io/github/actions/workflow/status/Hub-yang/favicon-harvester/release.yml?style=flat-square&logo=githubactions&logoColor=white" alt="CI"></a>
+  <a href="./LICENSE"><img src="https://img.shields.io/github/license/Hub-yang/favicon-harvester?style=flat-square&logo=opensourceinitiative&logoColor=white" alt="License"></a>
+  <img src="https://img.shields.io/badge/manifest-v3-brightgreen?style=flat-square&logo=googlechrome&logoColor=white" alt="Manifest V3">
 </p>
 
 <p align="center"><a href="./README.md">简体中文</a> | English</p>
@@ -15,7 +15,7 @@
 <p align="center"><img src="./docs/screenshot.png" width="320" alt="Panel screenshot"></p>
 -->
 
-## Why this exists
+## 🔍 Why this exists
 
 Grabbing a site's icons usually goes like this: open DevTools, dig through `<head>` for `<link rel="icon">`, guess at `/favicon.ico` when that turns up nothing, then chase the `<link rel="manifest">` and pick URLs out of the JSON by hand if you want the larger sizes.
 
@@ -23,7 +23,7 @@ And even then some of those URLs are stale. The request succeeds; the image is b
 
 This extension collapses all of that into one click.
 
-## What it does
+## 🧩 What it does
 
 - **Four sources, probed in parallel.** `<link>` tags in the page, the Web App Manifest, well-known paths like `/favicon.ico`, and the `tab.favIconUrl` the browser already has.
 - **Only live icons make the list.** Every candidate is fetched in the background to confirm it resolves, then rendered as an actual `<img>` in the panel. Both checks have to pass. The "request succeeded but the image is broken" case gets filtered out.
@@ -32,7 +32,7 @@ This extension collapses all of that into one click.
 - **It touches one tab, and only when asked.** The manifest declares `activeTab`, `scripting` and `downloads` — no `host_permissions`. Until you click the toolbar icon, no code runs.
 - **No third parties.** Every icon URL comes from the site itself, never from a fallback service like Google S2. Which sites you inspect stays between you and your browser.
 
-## Install
+## 📦 Install
 
 ### From a release
 
@@ -49,11 +49,11 @@ pnpm build      # output lands in .output/chrome-mv3
 
 Then load `.output/chrome-mv3` via steps 2 and 3 above. For development, `pnpm dev` launches a Chrome instance with the extension installed and hot-reloads on save.
 
-## Usage
+## 🖱 Usage
 
 Open any page → click the toolbar icon → download icons one at a time or all at once, or just copy an icon's URL.
 
-## How the discovery works
+## 🔬 How the discovery works
 
 Clicking the icon kicks off four collectors at once:
 
@@ -68,13 +68,13 @@ Results are deduplicated by absolute URL — when the same URL shows up twice, t
 
 That still isn't enough. A successful background fetch doesn't mean the popup's `<img>` can render it — different request context, and `<img>` sends a Referer that may trip the site's hotlink protection. So candidates get one more real render check inside the panel, and anything that breaks is dropped on the spot.
 
-## Known limits
+## ⚠️ Known limits
 
 - Restricted pages (`chrome://`, the Chrome Web Store) can't be scanned. The panel says so instead of spinning forever.
 - Only icons the site declares itself. If a site has no `<link>`, no manifest, and no `/favicon.ico`, there's nothing to find — this extension won't invent one from a third-party service.
 - No format conversion. If you want a PNG of an SVG icon, that's on you.
 
-## Development
+## 🛠 Development
 
 Built with [WXT](https://wxt.dev), Vue 3 `<script setup>`, TypeScript, UnoCSS and Vitest.
 
@@ -105,6 +105,19 @@ Every module has a sibling `*.test.ts` — 154 cases in total. Tests run under `
 
 The full Chrome Web Store submission process lives in [PUBLISHING.md](./PUBLISHING.md) (written in Chinese).
 
-## License
+## 🤝 Contributing
+
+Issues and PRs are welcome. Opening an issue first to talk through the approach will usually save you some work.
+
+```bash
+pnpm install
+pnpm dev
+```
+
+Run `pnpm lint && pnpm compile && pnpm test` before you push. Commit messages follow [Conventional Commits](https://www.conventionalcommits.org/) and husky enforces it locally, so a malformed message gets rejected on the spot.
+
+Two kinds of changes won't be merged, stated up front: **adding a third-party icon fallback service** (Google S2 and friends), and **auto-selecting the "best" icon for the user**. The first leaks which sites you browse to a third party; the second is a deliberate non-goal — deciding which icon fits is the user's call.
+
+## 📄 License
 
 [MIT](./LICENSE) © Hubery Yang
