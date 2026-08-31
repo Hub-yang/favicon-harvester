@@ -1,7 +1,7 @@
 {
   "name": "favicon-harvester",
   "type": "module",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "description": "获取当前网站的 favicon、apple-touch-icon、manifest 图标等资源，去重后逐个下载，不依赖第三方服务。",
   "scripts": {

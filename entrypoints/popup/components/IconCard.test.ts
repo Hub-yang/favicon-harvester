@@ -10,9 +10,23 @@ function mountCard(candidate: IconCandidate, domain = 'example.com') {
   return mount(IconCard, { props: { candidate, domain } })
 }
 
+function downloadButton(wrapper: ReturnType<typeof mountCard>) {
+  return wrapper.get('[data-testid="download-button"]')
+}
+
+function copyButton(wrapper: ReturnType<typeof mountCard>) {
+  return wrapper.get('[data-testid="copy-button"]')
+}
+
+function stubClipboard(writeText: (text: string) => Promise<void>) {
+  vi.stubGlobal('navigator', { ...navigator, clipboard: { writeText: vi.fn(writeText) } })
+  return vi.mocked(navigator.clipboard.writeText)
+}
+
 describe('iconCard', () => {
   afterEach(() => {
     vi.clearAllMocks()
+    vi.unstubAllGlobals()
   })
 
   describe('展示', () => {
@@ -58,7 +72,7 @@ describe('iconCard', () => {
       }) as ReturnType<typeof sendMessage>)
 
       const wrapper = mountCard({ url: 'https://example.com/a.png', source: 'link', width: 32, height: 32 })
-      const button = wrapper.get('button')
+      const button = downloadButton(wrapper)
 
       await button.trigger('click')
 
@@ -81,22 +95,62 @@ describe('iconCard', () => {
       vi.mocked(sendMessage).mockResolvedValue({ success: false, error: 'boom' } as Awaited<ReturnType<typeof sendMessage>>)
 
       const wrapper = mountCard({ url: 'https://example.com/a.png', source: 'link' })
-      await wrapper.get('button').trigger('click')
+      await downloadButton(wrapper).trigger('click')
       await flushPromises()
 
-      expect(wrapper.get('button').text()).toBe('重试')
+      expect(downloadButton(wrapper).text()).toBe('重试')
     })
 
     it('sendMessage 本身 reject（如扩展上下文失效）时按钮文案变为"重试"而非卡死', async () => {
       vi.mocked(sendMessage).mockRejectedValue(new Error('Extension context invalidated'))
 
       const wrapper = mountCard({ url: 'https://example.com/a.png', source: 'link' })
-      await wrapper.get('button').trigger('click')
+      await downloadButton(wrapper).trigger('click')
       await flushPromises()
 
-      const button = wrapper.get('button')
+      const button = downloadButton(wrapper)
       expect(button.text()).toBe('重试')
       expect(button.attributes('disabled')).toBeUndefined()
+    })
+  })
+
+  describe('复制链接', () => {
+    it('点击后把候选的绝对 URL 写入剪贴板，按钮文案变为"已复制"', async () => {
+      const writeText = stubClipboard(async () => {})
+
+      const wrapper = mountCard({ url: 'https://example.com/a.png', source: 'link' })
+      await copyButton(wrapper).trigger('click')
+      await flushPromises()
+
+      expect(writeText).toHaveBeenCalledWith('https://example.com/a.png')
+      expect(copyButton(wrapper).text()).toBe('已复制')
+    })
+
+    it('"已复制"提示在 1.5 秒后回落为"复制"，便于连续复制多个图标', async () => {
+      vi.useFakeTimers()
+      stubClipboard(async () => {})
+
+      const wrapper = mountCard({ url: 'https://example.com/a.png', source: 'link' })
+      await copyButton(wrapper).trigger('click')
+      await flushPromises()
+      expect(copyButton(wrapper).text()).toBe('已复制')
+
+      await vi.advanceTimersByTimeAsync(1500)
+
+      expect(copyButton(wrapper).text()).toBe('复制')
+      vi.useRealTimers()
+    })
+
+    it('剪贴板写入被拒绝时按钮文案变为"失败"而非静默无反馈', async () => {
+      stubClipboard(async () => {
+        throw new Error('NotAllowedError')
+      })
+
+      const wrapper = mountCard({ url: 'https://example.com/a.png', source: 'link' })
+      await copyButton(wrapper).trigger('click')
+      await flushPromises()
+
+      expect(copyButton(wrapper).text()).toBe('失败')
     })
   })
 })

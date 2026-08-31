@@ -2,6 +2,7 @@ import type { IconCandidate } from '@/utils/types'
 import { useDebounceFn } from '@vueuse/core'
 import { computed, onMounted, ref } from 'vue'
 import { sendMessage } from '@/utils/messaging'
+import { sortCandidatesBySize } from '@/utils/sort-candidates'
 import { verifyImageLoadable } from '@/utils/verify-image-loadable'
 
 // 用户仅点击"重试"按钮的失败次数才计入，达到该次数后终止并隐藏按钮
@@ -43,7 +44,8 @@ export function useIconScan() {
       const verified = await Promise.all(
         result.candidates.map(async candidate => (await verifyImageLoadable(candidate.url)) ? candidate : undefined),
       )
-      candidates.value = verified.filter((candidate): candidate is IconCandidate => candidate !== undefined)
+      // 排序放在验证之后：死链已被剔除，排出来的顺序即最终展示顺序
+      candidates.value = sortCandidatesBySize(verified.filter((candidate): candidate is IconCandidate => candidate !== undefined))
     }
     catch {
       // sendMessage 自身可能因扩展上下文失效等传输层原因 reject，按"本次未获取到候选"处理

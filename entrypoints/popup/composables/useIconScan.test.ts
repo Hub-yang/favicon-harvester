@@ -104,6 +104,20 @@ describe('useIconScan', () => {
     expect(wrapper.vm.showRetryPanel).toBe(false)
   })
 
+  it('扫描结果按尺寸降序暴露，尺寸未知的候选垫底', async () => {
+    const small = { url: 'https://example.com/16.png', source: 'link' as const, width: 16, height: 16 }
+    const unknown = { url: 'https://example.com/f.ico', source: 'well-known' as const, sourceDetail: 'favicon.ico' }
+    const large = { url: 'https://example.com/180.png', source: 'link' as const, width: 180, height: 180 }
+    stubActiveTab(makeTab())
+    vi.mocked(sendMessage).mockResolvedValue({ restricted: false, candidates: [small, unknown, large] } as Awaited<ReturnType<typeof sendMessage>>)
+    vi.mocked(verifyImageLoadable).mockResolvedValue(true)
+
+    const wrapper = mountScan()
+    await flushPromises()
+
+    expect(wrapper.vm.candidates.map(candidate => candidate.url)).toEqual([large.url, small.url, unknown.url])
+  })
+
   it('连续 3 次手动重试都失败后进入终止态，第 4 次点击不再发请求', async () => {
     stubActiveTab(makeTab())
     vi.mocked(sendMessage).mockResolvedValue({ restricted: false, candidates: [] } as Awaited<ReturnType<typeof sendMessage>>)

@@ -1,10 +1,13 @@
 <script lang="ts" setup>
 import IconCard from './components/IconCard.vue'
+import IconToolbar from './components/IconToolbar.vue'
 import ScanRetryPanel from './components/ScanRetryPanel.vue'
 import StatusBanner from './components/StatusBanner.vue'
+import { useBatchDownload } from './composables/useBatchDownload'
 import { useIconScan } from './composables/useIconScan'
 
 const { loading, restricted, candidates, domain, retrying, exhausted, showRetryPanel, retry, removeCandidate } = useIconScan()
+const { state: batchState, completed, failedCount, run: downloadAll } = useBatchDownload(candidates, domain)
 
 const appVersion = browser.runtime.getManifest().version
 </script>
@@ -21,6 +24,15 @@ const appVersion = browser.runtime.getManifest().version
     </header>
 
     <StatusBanner v-if="loading || restricted" :state="loading ? 'loading' : 'restricted'" />
+
+    <IconToolbar
+      v-if="candidates.length"
+      :count="candidates.length"
+      :state="batchState"
+      :completed="completed"
+      :failed-count="failedCount"
+      @download="downloadAll"
+    />
 
     <ul v-if="candidates.length" class="m-0 p-0 list-none divide-y divide-[var(--fh-border)]">
       <IconCard

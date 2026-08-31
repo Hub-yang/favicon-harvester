@@ -1,5 +1,6 @@
 <script lang="ts" setup>
 import type { IconCandidate } from '@/utils/types'
+import { useTimeoutFn } from '@vueuse/core'
 import { computed, ref } from 'vue'
 import { buildFilename, resolveIconExtension } from '@/utils/icon-naming'
 import { sendMessage } from '@/utils/messaging'
@@ -9,6 +10,12 @@ const emit = defineEmits<{ loadError: [url: string] }>()
 
 type DownloadState = 'idle' | 'downloading' | 'done' | 'error'
 const downloadState = ref<DownloadState>('idle')
+
+type CopyState = 'idle' | 'copied' | 'error'
+const copyState = ref<CopyState>('idle')
+
+/** 复制结果提示的停留时长，到点回落为 idle，便于连续复制多个图标 */
+const COPY_FEEDBACK_MS = 1500
 
 // 来源的中文/可读标签
 const SOURCE_LABEL: Record<IconCandidate['source'], string> = {
@@ -24,6 +31,13 @@ const BUTTON_LABEL: Record<DownloadState, string> = {
   downloading: '下载中…',
   done: '已下载',
   error: '重试',
+}
+
+// 复制按钮各状态文案
+const COPY_LABEL: Record<CopyState, string> = {
+  idle: '复制',
+  copied: '已复制',
+  error: '失败',
 }
 
 // 尺寸展示：有宽高显示 W×H，否则回退到 sourceDetail 或"尺寸未知"
@@ -52,6 +66,24 @@ async function handleDownload() {
     downloadState.value = 'error'
   }
 }
+
+// 重复点击时重新计时，而不是让上一次的定时器提前把提示清掉
+const { start: scheduleCopyReset } = useTimeoutFn(() => {
+  copyState.value = 'idle'
+}, COPY_FEEDBACK_MS, { immediate: false })
+
+async function handleCopy() {
+  try {
+    // popup 属于扩展页面，用户手势下的 writeText 无需声明 clipboardWrite 权限
+    await navigator.clipboard.writeText(props.candidate.url)
+    copyState.value = 'copied'
+  }
+  catch {
+    // 剪贴板可能因浏览器策略拒绝写入，给出可见反馈而非静默失败
+    copyState.value = 'error'
+  }
+  scheduleCopyReset()
+}
 </script>
 
 <template>
@@ -76,13 +108,23 @@ async function handleDownload() {
       </div>
     </div>
 
-    <!-- 下载按钮 -->
-    <button
-      class="flex-none px-2.5 py-1 text-[12px] rounded border-0 cursor-pointer text-white bg-[var(--fh-accent)] hover:bg-[var(--fh-accent-hover)] disabled:cursor-default disabled:opacity-60"
-      :disabled="downloadState === 'downloading'"
-      @click="handleDownload"
-    >
-      {{ BUTTON_LABEL[downloadState] }}
-    </button>
+    <!-- 操作区：下载为主操作用实心色，复制为次操作用描边 -->
+    <div class="flex-none flex flex-col gap-1 w-[58px]">
+      <button
+        data-testid="download-button"
+        class="px-2 py-1 text-[12px] rounded border-0 cursor-pointer text-white bg-[var(--fh-accent)] hover:bg-[var(--fh-accent-hover)] disabled:cursor-default disabled:opacity-60"
+        :disabled="downloadState === 'downloading'"
+        @click="handleDownload"
+      >
+        {{ BUTTON_LABEL[downloadState] }}
+      </button>
+      <button
+        data-testid="copy-button"
+        class="px-2 py-1 text-[12px] rounded cursor-pointer bg-transparent border border-solid border-[var(--fh-border)] text-[var(--fh-muted)] hover:border-[var(--fh-accent)] hover:text-[var(--fh-accent)]"
+        @click="handleCopy"
+      >
+        {{ COPY_LABEL[copyState] }}
+      </button>
+    </div>
   </li>
 </template>
