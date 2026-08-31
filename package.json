@@ -5,6 +5,27 @@
   "private": true,
   "packageManager": "pnpm@11.15.1",
   "description": "扫描当前网站正在使用的图标（favicon 等），去重后列出全部结果，单个下载或一次全部下载都可以，不依赖第三方服务。",
+  "author": "Hubery Yang (https://github.com/Hub-yang)",
+  "license": "MIT",
+  "homepage": "https://github.com/Hub-yang/favicon-harvester#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Hub-yang/favicon-harvester.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Hub-yang/favicon-harvester/issues"
+  },
+  "keywords": [
+    "chrome-extension",
+    "browser-extension",
+    "manifest-v3",
+    "favicon",
+    "apple-touch-icon",
+    "web-app-manifest",
+    "icon-downloader",
+    "wxt",
+    "vue"
+  ],
   "scripts": {
     "dev": "wxt",
     "dev:firefox": "wxt -b firefox",
