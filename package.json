@@ -3,7 +3,7 @@
   "type": "module",
   "version": "0.2.0",
   "private": true,
-  "description": "获取当前网站的 favicon、apple-touch-icon、manifest 图标等资源，去重后逐个下载，不依赖第三方服务。",
+  "description": "扫描当前网站正在使用的图标（favicon 等），去重后列出全部结果，单个下载或一次全部下载都可以，不依赖第三方服务。",
   "scripts": {
     "dev": "wxt",
     "dev:firefox": "wxt -b firefox",
