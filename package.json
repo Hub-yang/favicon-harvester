@@ -48,7 +48,7 @@
     "wxt": "^0.20.27"
   },
   "lint-staged": {
-    "*": "eslint . --fix",
+    "*": "eslint --fix",
     "*.{ts,vue}": "bash -c 'vue-tsc --noEmit'"
   }
 }
