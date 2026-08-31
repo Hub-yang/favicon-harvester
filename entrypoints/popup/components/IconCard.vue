@@ -17,7 +17,6 @@ const copyState = ref<CopyState>('idle')
 /** 复制结果提示的停留时长，到点回落为 idle，便于连续复制多个图标 */
 const COPY_FEEDBACK_MS = 1500
 
-// 来源的中文/可读标签
 const SOURCE_LABEL: Record<IconCandidate['source'], string> = {
   'link': 'DOM link',
   'manifest': 'manifest',
@@ -25,7 +24,6 @@ const SOURCE_LABEL: Record<IconCandidate['source'], string> = {
   'tab': '浏览器兜底',
 }
 
-// 下载按钮各状态文案
 const BUTTON_LABEL: Record<DownloadState, string> = {
   idle: '下载',
   downloading: '下载中…',
@@ -33,14 +31,12 @@ const BUTTON_LABEL: Record<DownloadState, string> = {
   error: '重试',
 }
 
-// 复制按钮各状态文案
 const COPY_LABEL: Record<CopyState, string> = {
   idle: '复制',
   copied: '已复制',
   error: '失败',
 }
 
-// 尺寸展示：有宽高显示 W×H，否则回退到 sourceDetail 或"尺寸未知"
 const sizeLabel = computed(() => {
   const { width, height, sourceDetail } = props.candidate
   if (width !== undefined && height !== undefined)
@@ -88,7 +84,7 @@ async function handleCopy() {
 
 <template>
   <li class="flex items-center gap-3 px-3 py-2">
-    <!-- 缩略图：棋盘格底衬 + object-contain，img 直连候选 URL 不受 CORS 限制 -->
+    <!-- img 直连候选 URL，不走 fetch，因此不受 CORS 限制 -->
     <div class="fh-checker flex-none w-10 h-10 rounded flex items-center justify-center overflow-hidden">
       <img
         :src="candidate.url"
@@ -98,7 +94,6 @@ async function handleCopy() {
       >
     </div>
 
-    <!-- 尺寸 + 来源 -->
     <div class="flex-1 min-w-0">
       <div class="truncate text-[var(--fh-text)]">
         {{ sizeLabel }}
@@ -108,7 +103,6 @@ async function handleCopy() {
       </div>
     </div>
 
-    <!-- 操作区：下载为主操作用实心色，复制为次操作用描边 -->
     <div class="flex-none flex flex-col gap-1 w-[58px]">
       <button
         data-testid="download-button"

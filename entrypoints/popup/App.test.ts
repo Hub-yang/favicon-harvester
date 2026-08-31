@@ -116,7 +116,6 @@ describe('app', () => {
     const cards = wrapper.findAllComponents(IconCard)
     expect(cards).toHaveLength(2)
     expect(cards[0]?.props('domain')).toBe('github.com')
-    // scanIcons 用 active tab 的 id 发起
     expect(sendMessage).toHaveBeenCalledWith('scanIcons', { tabId: 1 })
   })
 

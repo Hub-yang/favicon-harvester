@@ -76,7 +76,6 @@ describe('iconCard', () => {
 
       await button.trigger('click')
 
-      // 进行中：按钮禁用且文案为"下载中…"
       expect(button.attributes('disabled')).toBeDefined()
       expect(button.text()).toBe('下载中…')
       expect(sendMessage).toHaveBeenCalledWith('downloadIcon', {
