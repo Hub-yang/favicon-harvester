@@ -113,31 +113,50 @@ Chrome 商店「隐私声明」页要求填一个可公开访问的隐私政策 
 
 ## 第二部分：后续版本迭代发布流程
 
-每次改完代码、要发新版本时，按下面顺序操作：
+版本号递增、打标签、跑验证、构建 zip、生成 changelog、创建 GitHub Release 这一串动作已由 `.github/workflows/release.yml` 自动化，本地只剩一条命令。
 
-1. 确认所有改动已提交（`git status` 干净）。
-2. 更新版本号：编辑 `package.json` 的 `version` 字段（遵循语义化版本，纯 bug 修复升 patch，如 `0.1.0` → `0.1.1`；新功能升 minor；破坏性变更升 major）。
-3. 跑完整验证（同上线前 review 的验收标准）：
+1. 确认所有改动已提交并推送（`git status` 干净）。建议先在本地跑一遍验证：
+
    ```bash
-   pnpm compile
-   pnpm test
-   pnpm lint
+   pnpm lint && pnpm compile && pnpm test
    ```
-4. 生产构建并打包：
+
+   这一步不是必须的（CI 里会再跑一遍作为门禁），但能避免标签推上去才发现失败——那样得先删标签才能重来（见本节末尾）。
+
+2. 跑发布命令，按提示选版本号（纯 bug 修复选 patch，新功能选 minor，破坏性变更选 major）：
+
    ```bash
-   pnpm build
-   pnpm zip
+   pnpm release
    ```
-5. 提交版本号改动：
-   ```bash
-   git add package.json
-   git commit -m "chore: 发布 v<新版本号>"
-   git push
-   ```
-6. 打开 [Chrome Web Store 开发者控制台](https://chrome.google.com/webstore/devconsole)，进入已发布的「图标提取器」项目。
-7. 「Package」标签页上传新的 zip 包（Chrome 会自动识别 `manifest.json` 里的 `version` 已递增）。
-8. 如果这次改动涉及新权限/新的数据处理方式，同步更新「Privacy practices」标签页对应内容；否则跳过，直接提交。
+
+   `bumpp` 会自动改写 `package.json` 的 `version`、生成一条 `chore: release v<新版本号>` 提交、打上 `v<新版本号>` 标签并推送。提交信息里的 `chore` 在 commitlint 白名单内，不会被 husky 钩子拦下。
+
+3. 标签推送后 GitHub Actions 自动接手，在仓库 Actions 页面能看到 Release 工作流依次执行：
+
+   - 校验标签名与 `package.json` 的 `version` 一致（防手滑打错标签）；
+   - 跑 `pnpm lint` / `pnpm compile` / `pnpm test` 作为发布门禁，任一失败就不会产生 Release；
+   - 通过后 `pnpm zip` 构建打包，`changelogithub` 按 conventional commits 把上一个标签至今的提交渲染成 Release 正文，最后把 zip 作为附件传上去。
+
+4. 工作流跑绿后打开仓库 Releases 页面，下载附件里的 `favicon-harvester-<版本号>-chrome.zip`。（不想等 CI 也可以本地 `pnpm zip` 自己出包，产物路径和文件名完全一样。）
+
+5. 打开 [Chrome Web Store 开发者控制台](https://chrome.google.com/webstore/devconsole)，进入已发布的「图标提取器」项目。
+
+6. 「Package」标签页上传这个 zip 包（Chrome 会自动识别 `manifest.json` 里的 `version` 已递增）。
+
+7. 如果这次改动涉及新权限/新的数据处理方式，同步更新「Privacy practices」标签页对应内容；否则跳过，直接提交。
+
+8. 如果这次改动让 1.2 节的商店文案不再准确（比如新增了文案里没提到的能力），先按那一节标注的重写原则更新文案，再在「Store listing」标签页同步。
+
 9. 点击「提交审核」。更新审核通常比首次提交快。
+
+**门禁失败或标签打错了怎么办**：Release 工作流跑红时不会产生 Release，修完问题后需要把标签删掉重打，否则同名标签推不上去：
+
+```bash
+git tag -d v<版本号>                  # 删本地标签
+git push origin :refs/tags/v<版本号>  # 删远端标签
+```
+
+然后修复问题、提交，再重新跑 `pnpm release`。
 
 ---
 

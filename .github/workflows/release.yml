@@ -1,0 +1,66 @@
+name: Release
+
+# 由本地 `pnpm release`（bumpp）推送的 v* 标签触发，
+# 手动 `git tag v0.2.0 && git push origin v0.2.0` 同样能触发。
+on:
+  push:
+    tags:
+      - 'v*'
+
+# 创建 Release 与上传附件都需要写权限，其余权限保持默认的只读
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          # changelogithub 要靠完整历史找出上一个标签，浅克隆会让 changelog 为空
+          fetch-depth: 0
+
+      # 必须排在 setup-node 之前，否则下面的 cache: pnpm 找不到 pnpm
+      # 装哪个版本由 package.json 的 packageManager 字段决定
+      - uses: pnpm/action-setup@v6
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: lts/*
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      # 防手滑打错标签：标签名与 package.json 的 version 必须一致，
+      # 否则产出的 zip 文件名会和标签对不上，Release 里会挂错包
+      - name: 校验标签与 package.json 版本一致
+        run: |
+          TAG="${GITHUB_REF_NAME#v}"
+          PKG="$(node -p "require('./package.json').version")"
+          if [ "$TAG" != "$PKG" ]; then
+            echo "标签 v$TAG 与 package.json 的 $PKG 不一致，取消发布"
+            exit 1
+          fi
+
+      # 发布门禁：与本地同一套命令，任一失败则不产生 Release
+      - run: pnpm lint
+      - run: pnpm compile
+      - run: pnpm test
+
+      # wxt zip 内部会先跑一遍生产构建，无需单独执行 pnpm build
+      - run: pnpm zip
+
+      # 按 conventional commits 把两个标签之间的提交渲染成 Release 正文；
+      # 只在 CI 跑一次，故用 npx 调用而不占一条 devDependency
+      - name: 生成 Release 与 changelog
+        run: npx changelogithub@15
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # 附件要等 Release 建好之后再传，顺序不能与上一步对调。
+      # 通配符按版本号收窄，避免误传 .output 下遗留的旧版本包；
+      # 保留两侧通配是为了将来加 firefox 目标时能一并传上去。
+      - name: 上传插件 zip 包
+        run: gh release upload "$GITHUB_REF_NAME" .output/*-"${GITHUB_REF_NAME#v}"-*.zip --clobber
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
