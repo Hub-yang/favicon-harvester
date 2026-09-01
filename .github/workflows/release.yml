@@ -2,14 +2,25 @@ name: Release
 
 # 由本地 `pnpm release`（bumpp）推送的 v* 标签触发，
 # 手动 `git tag v0.2.0 && git push origin v0.2.0` 同样能触发。
+# workflow_dispatch 用于对一个已存在的标签重跑本流程，补发漏掉的 Release。
 on:
   push:
     tags:
       - 'v*'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 要补发 Release 的已有标签（如 v0.2.0）
+        required: true
 
 # 创建 Release 与上传附件都需要写权限，其余权限保持默认的只读
 permissions:
   contents: write
+
+env:
+  # 本次发布的标签只在这里定义一次：push 时取 ref，手动补发时取输入。
+  # 下面的 run 步骤一律读 $TAG，不把外部输入插值进 shell 命令。
+  TAG: ${{ github.event.inputs.tag || github.ref_name }}
 
 jobs:
   release:
@@ -17,6 +28,9 @@ jobs:
     steps:
       - uses: actions/checkout@v7
         with:
+          # 显式检出标签本身：补发场景下才不会拿默认分支的最新代码
+          # 去跑门禁、打包，产出与标签对不上的 zip
+          ref: ${{ github.event.inputs.tag || github.ref_name }}
           # changelogithub 要靠完整历史找出上一个标签，浅克隆会让 changelog 为空
           fetch-depth: 0
 
@@ -35,10 +49,15 @@ jobs:
       # 否则产出的 zip 文件名会和标签对不上，Release 里会挂错包
       - name: 校验标签与 package.json 版本一致
         run: |
-          TAG="${GITHUB_REF_NAME#v}"
+          # 手动补发时输入的标签若漏了 v 前缀，版本校验依然会通过，
+          # 但后面的 changelogithub / gh release upload 会指向一个不存在的 ref
+          case "$TAG" in
+            v*) ;;
+            *) echo "标签 $TAG 必须以 v 开头，取消发布"; exit 1 ;;
+          esac
           PKG="$(node -p "require('./package.json').version")"
-          if [ "$TAG" != "$PKG" ]; then
-            echo "标签 v$TAG 与 package.json 的 $PKG 不一致，取消发布"
+          if [ "${TAG#v}" != "$PKG" ]; then
+            echo "标签 $TAG 与 package.json 的 $PKG 不一致，取消发布"
             exit 1
           fi
 
@@ -51,9 +70,10 @@ jobs:
       - run: pnpm zip
 
       # 按 conventional commits 把两个标签之间的提交渲染成 Release 正文；
-      # 只在 CI 跑一次，故用 npx 调用而不占一条 devDependency
+      # 只在 CI 跑一次，故用 npx 调用而不占一条 devDependency。
+      # 锁住大版本：不锁的话上游一个破坏性更新就能让发版当场挂掉
       - name: 生成 Release 与 changelog
-        run: npx changelogithub@15
+        run: npx changelogithub@15 --to "$TAG"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -61,6 +81,6 @@ jobs:
       # 通配符按版本号收窄，避免误传 .output 下遗留的旧版本包；
       # 保留两侧通配是为了将来加 firefox 目标时能一并传上去。
       - name: 上传插件 zip 包
-        run: gh release upload "$GITHUB_REF_NAME" .output/*-"${GITHUB_REF_NAME#v}"-*.zip --clobber
+        run: gh release upload "$TAG" .output/*-"${TAG#v}"-*.zip --clobber
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
