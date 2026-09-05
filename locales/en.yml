@@ -1,0 +1,39 @@
+# Extension metadata: referenced from the manifest as __MSG_extName__ / __MSG_extDescription__
+# Keep extDescription under 132 characters — that is Chrome's hard limit for manifest descriptions.
+extName: Favicon Harvester
+extDescription: Scan the icons a site actually uses, list every unique result, download them one by one or all at once. No third-party services.
+
+app:
+  title: Favicon Harvester
+
+status:
+  loading: Scanning this page for icons…
+  restricted: This page is restricted, showing the browser fallback icon only
+
+retry:
+  noResults: No displayable icons found
+  empty: This site has no icons to offer
+  retrying: Retrying…
+  retry: Retry
+
+toolbar:
+  iconCount:
+    1: 1 icon
+    n: $1 icons
+  downloadAll: Download all
+  downloading: Downloading $1/$2…
+  done: Downloaded
+  failed:
+    1: 1 failed, retry
+    n: $1 failed, retry
+
+card:
+  sourceTab: Browser fallback
+  unknownSize: Size unknown
+  download: Download
+  downloading: Downloading…
+  downloaded: Downloaded
+  retry: Retry
+  copy: Copy
+  copied: Copied
+  copyFailed: Failed

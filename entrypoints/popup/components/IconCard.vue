@@ -2,6 +2,7 @@
 import type { IconCandidate } from '@/utils/types'
 import { useTimeoutFn } from '@vueuse/core'
 import { computed, ref } from 'vue'
+import { i18n } from '#i18n'
 import { buildFilename, resolveIconExtension } from '@/utils/icon-naming'
 import { sendMessage } from '@/utils/messaging'
 
@@ -21,27 +22,27 @@ const SOURCE_LABEL: Record<IconCandidate['source'], string> = {
   'link': 'DOM link',
   'manifest': 'manifest',
   'well-known': 'well-known',
-  'tab': '浏览器兜底',
+  'tab': i18n.t('card.sourceTab'),
 }
 
 const BUTTON_LABEL: Record<DownloadState, string> = {
-  idle: '下载',
-  downloading: '下载中…',
-  done: '已下载',
-  error: '重试',
+  idle: i18n.t('card.download'),
+  downloading: i18n.t('card.downloading'),
+  done: i18n.t('card.downloaded'),
+  error: i18n.t('card.retry'),
 }
 
 const COPY_LABEL: Record<CopyState, string> = {
-  idle: '复制',
-  copied: '已复制',
-  error: '失败',
+  idle: i18n.t('card.copy'),
+  copied: i18n.t('card.copied'),
+  error: i18n.t('card.copyFailed'),
 }
 
 const sizeLabel = computed(() => {
   const { width, height, sourceDetail } = props.candidate
   if (width !== undefined && height !== undefined)
     return `${width}×${height}`
-  return sourceDetail ?? '尺寸未知'
+  return sourceDetail ?? i18n.t('card.unknownSize')
 })
 
 // 格式标签：与下载文件名的扩展名同源，保证显示格式与实际下载扩展名一致

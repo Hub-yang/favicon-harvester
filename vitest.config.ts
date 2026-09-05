@@ -7,6 +7,8 @@ export default defineConfig({
   plugins: [vue(), WxtVitest()],
   test: {
     environment: 'happy-dom',
+    // 补上 fakeBrowser 缺失的 i18n.getMessage，详见该文件注释
+    setupFiles: ['./vitest.setup.ts'],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'html'],

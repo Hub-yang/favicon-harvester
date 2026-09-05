@@ -1,4 +1,5 @@
 <script lang="ts" setup>
+import { i18n } from '#i18n'
 import IconCard from './components/IconCard.vue'
 import IconToolbar from './components/IconToolbar.vue'
 import ScanRetryPanel from './components/ScanRetryPanel.vue'
@@ -16,7 +17,7 @@ const appVersion = browser.runtime.getManifest().version
   <div class="w-[300px] text-[13px]">
     <header class="flex items-center justify-between px-3 py-2 border-b border-[var(--fh-border)]">
       <div class="flex items-center gap-1">
-        <span class="font-semibold">图标提取器</span>
+        <span class="font-semibold">{{ i18n.t('app.title') }}</span>
         <span class="text-[11px] text-[var(--fh-muted)]">v{{ appVersion }}</span>
       </div>
       <span class="text-[11px] text-[var(--fh-muted)]">by HuberyYang</span>

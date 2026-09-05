@@ -29,6 +29,7 @@ This extension collapses all of that into one click.
 - **Only live icons make the list.** Every candidate is fetched in the background to confirm it resolves, then rendered as an actual `<img>` in the panel. Both checks have to pass. The "request succeeded but the image is broken" case gets filtered out.
 - **You get all of them.** Deduplicated candidates are listed in full, sorted largest first with SVG on top. Which one suits you is your call — the extension doesn't guess.
 - **Downloads are byte-for-byte.** No transcoding, no resizing, no compression. Filenames follow `domain-source-size.ext` and land under `favicon-harvester/<domain>/` in your downloads folder instead of cluttering its root, and one click can grab everything at once.
+- **Bilingual.** The interface and the extension name ship in both Simplified Chinese and English, picked automatically from your browser's UI language. Nothing to configure.
 - **It touches one tab, and only when asked.** The manifest declares `activeTab`, `scripting` and `downloads` — no `host_permissions`. Until you click the toolbar icon, no code runs.
 - **No third parties.** Every icon URL comes from the site itself, never from a fallback service like Google S2. Which sites you inspect stays between you and your browser.
 

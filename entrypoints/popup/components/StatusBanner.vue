@@ -1,12 +1,14 @@
 <script lang="ts" setup>
+import { i18n } from '#i18n'
+
 // 纯展示组件：加载中 / 受限页面两态提示条；空结果/重试由 ScanRetryPanel 承担
 type BannerState = 'loading' | 'restricted'
 
 defineProps<{ state: BannerState }>()
 
 const TEXT: Record<BannerState, string> = {
-  loading: '正在扫描当前页面的图标…',
-  restricted: '当前页面受限，仅显示浏览器兜底图标',
+  loading: i18n.t('status.loading'),
+  restricted: i18n.t('status.restricted'),
 }
 </script>
 

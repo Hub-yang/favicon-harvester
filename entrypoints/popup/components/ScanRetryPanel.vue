@@ -1,4 +1,6 @@
 <script lang="ts" setup>
+import { i18n } from '#i18n'
+
 // no-results：本次扫描 0 个可展示候选，提供重试入口；exhausted：连续 3 次手动重试仍失败，终止提示，不再提供按钮
 type PanelState = 'no-results' | 'exhausted'
 
@@ -8,8 +10,8 @@ defineEmits<{ retry: [] }>()
 
 <template>
   <div class="flex flex-col items-center gap-2 px-3 py-6 text-[12px] text-[var(--fh-muted)]">
-    <span v-if="state === 'no-results'">未能获取到可展示的图标</span>
-    <span v-else>当前网站暂无可获取的图标</span>
+    <span v-if="state === 'no-results'">{{ i18n.t('retry.noResults') }}</span>
+    <span v-else>{{ i18n.t('retry.empty') }}</span>
 
     <button
       v-if="state === 'no-results'"
@@ -17,7 +19,7 @@ defineEmits<{ retry: [] }>()
       :disabled="retrying"
       @click="$emit('retry')"
     >
-      {{ retrying ? '重试中…' : '重试' }}
+      {{ retrying ? i18n.t('retry.retrying') : i18n.t('retry.retry') }}
     </button>
   </div>
 </template>
