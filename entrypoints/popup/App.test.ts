@@ -205,8 +205,8 @@ describe('app', () => {
 
       const downloadCalls = vi.mocked(sendMessage).mock.calls.filter(([type]) => type === 'downloadIcon')
       expect(downloadCalls.map(([, data]) => (data as { filename: string }).filename)).toEqual([
-        'github.com-link-32x32.png',
-        'github.com-manifest-16x16.png',
+        'favicon-harvester/github.com/github.com-link-32x32.png',
+        'favicon-harvester/github.com/github.com-manifest-16x16.png',
       ])
     })
   })

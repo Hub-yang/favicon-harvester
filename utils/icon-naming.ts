@@ -27,12 +27,24 @@ export function resolveIconExtension(candidate: IconCandidate): string {
   return DEFAULT_EXTENSION
 }
 
+/** 下载根目录，避免图标散落在用户的下载目录顶层 */
+const DOWNLOAD_DIRECTORY = 'favicon-harvester'
+
+/**
+ * 生成 downloads.download 的 filename。
+ * 返回相对路径 `favicon-harvester/<域名>/<域名>-<来源>-<尺寸>.<扩展名>`，
+ * Chrome 会在用户的默认下载目录下自动建出缺失的层级。
+ */
 export function buildFilename(domain: string, candidate: IconCandidate): string {
+  // 域名可能因页面受限而取不到，此时只落到根目录，避免出现空目录层级和前导连字符
+  const directory = domain ? `${DOWNLOAD_DIRECTORY}/${domain}/` : `${DOWNLOAD_DIRECTORY}/`
+  const namePrefix = domain ? `${domain}-` : ''
+
   if (candidate.width !== undefined && candidate.height !== undefined)
-    return `${domain}-${candidate.source}-${candidate.width}x${candidate.height}.${resolveIconExtension(candidate)}`
+    return `${directory}${namePrefix}${candidate.source}-${candidate.width}x${candidate.height}.${resolveIconExtension(candidate)}`
 
   if (candidate.source === 'well-known' && candidate.sourceDetail)
-    return `${domain}-${candidate.sourceDetail}`
+    return `${directory}${namePrefix}${candidate.sourceDetail}`
 
-  return `${domain}-${candidate.source}.${resolveIconExtension(candidate)}`
+  return `${directory}${namePrefix}${candidate.source}.${resolveIconExtension(candidate)}`
 }

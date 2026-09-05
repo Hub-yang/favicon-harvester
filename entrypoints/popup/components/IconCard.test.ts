@@ -80,7 +80,7 @@ describe('iconCard', () => {
       expect(button.text()).toBe('下载中…')
       expect(sendMessage).toHaveBeenCalledWith('downloadIcon', {
         url: 'https://example.com/a.png',
-        filename: 'example.com-link-32x32.png',
+        filename: 'favicon-harvester/example.com/example.com-link-32x32.png',
       })
 
       resolveDownload({ success: true })

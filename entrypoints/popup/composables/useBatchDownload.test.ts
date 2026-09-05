@@ -40,11 +40,11 @@ describe('useBatchDownload', () => {
 
     expect(sendMessage).toHaveBeenNthCalledWith(1, 'downloadIcon', {
       url: 'https://example.com/a.png',
-      filename: 'example.com-link-32x32.png',
+      filename: 'favicon-harvester/example.com/example.com-link-32x32.png',
     })
     expect(sendMessage).toHaveBeenNthCalledWith(2, 'downloadIcon', {
       url: 'https://example.com/b.png',
-      filename: 'example.com-manifest-16x16.png',
+      filename: 'favicon-harvester/example.com/example.com-manifest-16x16.png',
     })
   })
 
