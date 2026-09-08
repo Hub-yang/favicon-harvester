@@ -1,9 +1,10 @@
-import type { ScanResult } from '@/utils/types'
+import type { IconCandidate, ScanResult } from '@/utils/types'
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest'
 import { fakeBrowser } from 'wxt/testing/fake-browser'
 import { downloadIconFile } from '@/utils/downloads'
 import { fetchIconBytes } from '@/utils/icon-bytes'
 import { discoverIcons } from '@/utils/icon-discovery'
+import { buildIconZipDataUrl } from '@/utils/icon-zip'
 import { sendMessage } from '@/utils/messaging'
 import background from './index'
 
@@ -11,6 +12,7 @@ import background from './index'
 vi.mock('@/utils/icon-discovery', () => ({ discoverIcons: vi.fn() }))
 vi.mock('@/utils/downloads', () => ({ downloadIconFile: vi.fn() }))
 vi.mock('@/utils/icon-bytes', () => ({ fetchIconBytes: vi.fn() }))
+vi.mock('@/utils/icon-zip', () => ({ buildIconZipDataUrl: vi.fn() }))
 
 function makeTab(overrides: Partial<Browser.tabs.Tab> = {}): Browser.tabs.Tab {
   return {
@@ -85,5 +87,71 @@ describe('background message handlers', () => {
 
     expect(fetchIconBytes).toHaveBeenCalledWith('https://example.com/a.png')
     expect(result).toEqual({ success: true, base64: 'AAEC', mimeType: 'image/png' })
+  })
+
+  it('downloadIconsZip：打包成功后按 buildZipFilename 的路径下载 data URL', async () => {
+    const candidates: IconCandidate[] = [{ url: 'https://example.com/a.png', source: 'link' }]
+    vi.mocked(buildIconZipDataUrl).mockResolvedValue({
+      success: true,
+      dataUrl: 'data:application/zip;base64,UEsD',
+      packed: 1,
+      skipped: 0,
+    })
+    vi.mocked(downloadIconFile).mockResolvedValue({ success: true, downloadId: 9 })
+
+    const result = await sendMessage('downloadIconsZip', { candidates, domain: 'example.com' })
+
+    expect(buildIconZipDataUrl).toHaveBeenCalledWith(candidates, 'example.com')
+    expect(downloadIconFile).toHaveBeenCalledWith(
+      'data:application/zip;base64,UEsD',
+      'favicon-harvester/example.com-icons.zip',
+    )
+    expect(result).toEqual({ success: true, downloadId: 9, packed: 1, skipped: 0 })
+  })
+
+  it('downloadIconsZip：部分图标取不到时把 skipped 一并回传给面板', async () => {
+    vi.mocked(buildIconZipDataUrl).mockResolvedValue({
+      success: true,
+      dataUrl: 'data:application/zip;base64,UEsD',
+      packed: 2,
+      skipped: 1,
+    })
+    vi.mocked(downloadIconFile).mockResolvedValue({ success: true, downloadId: 9 })
+
+    const result = await sendMessage('downloadIconsZip', {
+      candidates: [{ url: 'https://example.com/a.png', source: 'link' }],
+      domain: 'example.com',
+    })
+
+    expect(result).toMatchObject({ success: true, packed: 2, skipped: 1 })
+  })
+
+  it('downloadIconsZip：打包失败时不触发下载，透传错误', async () => {
+    vi.mocked(buildIconZipDataUrl).mockResolvedValue({ success: false, error: 'all icons failed to fetch' })
+
+    const result = await sendMessage('downloadIconsZip', {
+      candidates: [{ url: 'https://example.com/a.png', source: 'link' }],
+      domain: 'example.com',
+    })
+
+    expect(downloadIconFile).not.toHaveBeenCalled()
+    expect(result).toEqual({ success: false, error: 'all icons failed to fetch' })
+  })
+
+  it('downloadIconsZip：下载环节失败时返回失败结果', async () => {
+    vi.mocked(buildIconZipDataUrl).mockResolvedValue({
+      success: true,
+      dataUrl: 'data:application/zip;base64,UEsD',
+      packed: 1,
+      skipped: 0,
+    })
+    vi.mocked(downloadIconFile).mockResolvedValue({ success: false, error: 'Download interrupted' })
+
+    const result = await sendMessage('downloadIconsZip', {
+      candidates: [{ url: 'https://example.com/a.png', source: 'link' }],
+      domain: 'example.com',
+    })
+
+    expect(result).toMatchObject({ success: false, error: 'Download interrupted' })
   })
 })

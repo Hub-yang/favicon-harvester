@@ -3,11 +3,11 @@ import { computed } from 'vue'
 import { i18n } from '#i18n'
 
 const props = defineProps<{
-  /** 当前列表里的候选个数，同时作为批量下载的进度分母 */
+  /** 当前列表里的候选个数 */
   count: number
   state: 'idle' | 'running' | 'done' | 'error'
-  completed: number
-  failedCount: number
+  /** 取字节失败、没能打进包里的图标数 */
+  skipped: number
 }>()
 
 defineEmits<{ download: [] }>()
@@ -15,13 +15,14 @@ defineEmits<{ download: [] }>()
 const buttonLabel = computed(() => {
   switch (props.state) {
     case 'running':
-      return i18n.t('toolbar.downloading', [props.completed, props.count])
+      return i18n.t('toolbar.zipping')
     case 'done':
-      return i18n.t('toolbar.done')
+      // 部分图标取不到时如实报出来，否则用户解压后会以为插件漏了
+      return props.skipped > 0 ? i18n.t('toolbar.doneSkipped', [props.skipped]) : i18n.t('toolbar.done')
     case 'error':
-      return i18n.t('toolbar.failed', props.failedCount)
+      return i18n.t('toolbar.zipFailed')
     default:
-      return i18n.t('toolbar.downloadAll')
+      return i18n.t('toolbar.downloadZip')
   }
 })
 </script>

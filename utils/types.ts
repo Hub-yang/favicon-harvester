@@ -52,3 +52,23 @@ export interface DomScanResult {
   }[]
   manifestHref?: string
 }
+
+/** 打包 ZIP 的结果：成功时带可直接下载的 data URL，并报告实际打进包里/被跳过的图标数 */
+export interface IconZipResult {
+  success: boolean
+  dataUrl?: string
+  /** 实际打进包里的图标数 */
+  packed?: number
+  /** 取字节失败被跳过的图标数 */
+  skipped?: number
+  error?: string
+}
+
+/** 打包 ZIP 并下载的结果：在下载结果之上带回实际打包/跳过的图标数，供面板提示 */
+export interface ZipDownloadResult {
+  success: boolean
+  downloadId?: number
+  packed?: number
+  skipped?: number
+  error?: string
+}

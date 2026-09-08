@@ -4,11 +4,11 @@ import IconCard from './components/IconCard.vue'
 import IconToolbar from './components/IconToolbar.vue'
 import ScanRetryPanel from './components/ScanRetryPanel.vue'
 import StatusBanner from './components/StatusBanner.vue'
-import { useBatchDownload } from './composables/useBatchDownload'
 import { useIconScan } from './composables/useIconScan'
+import { useZipDownload } from './composables/useZipDownload'
 
 const { loading, restricted, candidates, domain, retrying, exhausted, showRetryPanel, retry, removeCandidate } = useIconScan()
-const { state: batchState, completed, failedCount, run: downloadAll } = useBatchDownload(candidates, domain)
+const { state: zipState, skipped, run: downloadZip } = useZipDownload(candidates, domain)
 
 const appVersion = browser.runtime.getManifest().version
 </script>
@@ -28,10 +28,9 @@ const appVersion = browser.runtime.getManifest().version
     <IconToolbar
       v-if="candidates.length"
       :count="candidates.length"
-      :state="batchState"
-      :completed="completed"
-      :failed-count="failedCount"
-      @download="downloadAll"
+      :state="zipState"
+      :skipped="skipped"
+      @download="downloadZip"
     />
 
     <ul v-if="candidates.length" class="m-0 p-0 list-none divide-y divide-[var(--fh-border)]">

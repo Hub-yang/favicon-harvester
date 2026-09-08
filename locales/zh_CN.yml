@@ -1,7 +1,7 @@
 # 扩展元信息：manifest 通过 __MSG_extName__ / __MSG_extDescription__ 引用
 # ⚠️ extName 必须逐字保持「图标提取器」——Chrome 网上应用店已上架版本用的就是它，改动会让已装用户看到的扩展名变化
 extName: 图标提取器
-extDescription: 扫描当前网站正在使用的图标（favicon 等），去重后列出全部结果，单个下载或一次全部下载都可以，不依赖第三方服务。
+extDescription: 扫描当前网站正在使用的图标（favicon 等），去重后列出全部结果，单个下载或打包成一个 ZIP 拿走，不依赖第三方服务。
 
 app:
   title: 图标提取器
@@ -21,12 +21,11 @@ toolbar:
   iconCount:
     1: 1 个图标
     n: $1 个图标
-  downloadAll: 全部下载
-  downloading: 下载中 $1/$2…
+  downloadZip: 打包下载 ZIP
+  zipping: 打包中…
   done: 已下载
-  failed:
-    1: 1 个失败，重试
-    n: $1 个失败，重试
+  doneSkipped: 已下载，跳过 $1 个
+  zipFailed: 打包失败，重试
 
 card:
   sourceTab: 浏览器兜底

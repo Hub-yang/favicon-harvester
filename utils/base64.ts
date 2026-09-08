@@ -13,12 +13,17 @@ export function bytesToBase64(bytes: Uint8Array): string {
   return btoa(binary)
 }
 
-/** base64 → Blob。popup 侧写剪贴板（ClipboardItem）需要真正的 Blob。 */
-export function base64ToBlob(base64: string, mimeType: string): Blob {
+/** base64 → 字节。ZIP 打包需要直接拿到 Uint8Array，不经过 Blob 中转。 */
+export function base64ToBytes(base64: string): Uint8Array<ArrayBuffer> {
   const binary = atob(base64)
   const bytes = new Uint8Array(binary.length)
   for (let i = 0; i < binary.length; i += 1)
     bytes[i] = binary.charCodeAt(i)
 
-  return new Blob([bytes], { type: mimeType })
+  return bytes
+}
+
+/** base64 → Blob。popup 侧写剪贴板（ClipboardItem）需要真正的 Blob。 */
+export function base64ToBlob(base64: string, mimeType: string): Blob {
+  return new Blob([base64ToBytes(base64)], { type: mimeType })
 }

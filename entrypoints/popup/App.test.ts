@@ -162,7 +162,7 @@ describe('app', () => {
     vi.useRealTimers()
   })
 
-  describe('批量下载工具栏', () => {
+  describe('打包下载工具栏', () => {
     it('有候选时展示工具栏', async () => {
       stubActiveTab(makeTab())
       vi.mocked(sendMessage).mockResolvedValue({
@@ -186,28 +186,44 @@ describe('app', () => {
       expect(wrapper.findComponent(IconToolbar).exists()).toBe(false)
     })
 
-    it('工具栏触发 download 后为每个候选各发一次下载消息', async () => {
+    it('工具栏触发 download 后只发一条打包消息，带上完整候选列表与域名', async () => {
+      const candidates = [
+        { url: 'https://github.com/a.png', source: 'link' as const, width: 32, height: 32 },
+        { url: 'https://github.com/b.png', source: 'manifest' as const, width: 16, height: 16 },
+      ]
       stubActiveTab(makeTab())
       vi.mocked(sendMessage).mockResolvedValue({
         restricted: false,
-        candidates: [
-          { url: 'https://github.com/a.png', source: 'link', width: 32, height: 32 },
-          { url: 'https://github.com/b.png', source: 'manifest', width: 16, height: 16 },
-        ],
+        candidates,
       } as Awaited<ReturnType<typeof sendMessage>>)
 
       const wrapper = mount(App)
       await flushPromises()
 
-      vi.mocked(sendMessage).mockResolvedValue({ success: true } as Awaited<ReturnType<typeof sendMessage>>)
+      vi.mocked(sendMessage).mockResolvedValue({ success: true, packed: 2, skipped: 0 } as Awaited<ReturnType<typeof sendMessage>>)
       wrapper.findComponent(IconToolbar).vm.$emit('download')
       await flushPromises()
 
-      const downloadCalls = vi.mocked(sendMessage).mock.calls.filter(([type]) => type === 'downloadIcon')
-      expect(downloadCalls.map(([, data]) => (data as { filename: string }).filename)).toEqual([
-        'favicon-harvester/github.com/github.com-link-32x32.png',
-        'favicon-harvester/github.com/github.com-manifest-16x16.png',
-      ])
+      const zipCalls = vi.mocked(sendMessage).mock.calls.filter(([type]) => type === 'downloadIconsZip')
+      expect(zipCalls).toHaveLength(1)
+      expect(zipCalls[0]![1]).toEqual({ candidates, domain: 'github.com' })
+    })
+
+    it('打包结果里的跳过数透传给工具栏展示', async () => {
+      stubActiveTab(makeTab())
+      vi.mocked(sendMessage).mockResolvedValue({
+        restricted: false,
+        candidates: [{ url: 'https://github.com/a.png', source: 'link', width: 32, height: 32 }],
+      } as Awaited<ReturnType<typeof sendMessage>>)
+
+      const wrapper = mount(App)
+      await flushPromises()
+
+      vi.mocked(sendMessage).mockResolvedValue({ success: true, packed: 1, skipped: 3 } as Awaited<ReturnType<typeof sendMessage>>)
+      wrapper.findComponent(IconToolbar).vm.$emit('download')
+      await flushPromises()
+
+      expect(wrapper.findComponent(IconToolbar).props()).toMatchObject({ state: 'done', skipped: 3 })
     })
   })
 })

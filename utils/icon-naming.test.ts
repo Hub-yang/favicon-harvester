@@ -1,6 +1,6 @@
 import type { IconCandidate } from './types'
 import { describe, expect, it } from 'vitest'
-import { buildFilename } from './icon-naming'
+import { buildFilename, buildIconBasename, buildZipFilename } from './icon-naming'
 
 describe('buildFilename', () => {
   it('有尺寸时按 domain-source-WxH.ext 命名', () => {
@@ -81,5 +81,49 @@ describe('buildFilename', () => {
     }
 
     expect(buildFilename('', candidate)).toBe('favicon-harvester/tab.ico')
+  })
+})
+
+describe('buildIconBasename', () => {
+  it('返回不含目录的扁平文件名，供 zip 内条目直接使用', () => {
+    const candidate: IconCandidate = {
+      url: 'https://example.com/apple-touch-icon.png',
+      source: 'link',
+      width: 180,
+      height: 180,
+      mimeType: 'image/png',
+    }
+
+    expect(buildIconBasename('example.com', candidate)).toBe('example.com-link-180x180.png')
+  })
+
+  it('域名缺失时不带前导连字符', () => {
+    const candidate: IconCandidate = {
+      url: 'https://example.com/favicon.ico',
+      source: 'tab',
+    }
+
+    expect(buildIconBasename('', candidate)).toBe('tab.ico')
+  })
+
+  it('与 buildFilename 共用同一套命名规则，只差目录前缀', () => {
+    const candidate: IconCandidate = {
+      url: 'https://example.com/favicon.ico',
+      source: 'well-known',
+      sourceDetail: 'favicon.ico',
+    }
+
+    expect(buildFilename('example.com', candidate))
+      .toBe(`favicon-harvester/example.com/${buildIconBasename('example.com', candidate)}`)
+  })
+})
+
+describe('buildZipFilename', () => {
+  it('打包文件与域名目录平级，不套进域名目录里', () => {
+    expect(buildZipFilename('example.com')).toBe('favicon-harvester/example.com-icons.zip')
+  })
+
+  it('域名缺失时退化为不带前缀的包名', () => {
+    expect(buildZipFilename('')).toBe('favicon-harvester/icons.zip')
   })
 })

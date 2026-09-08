@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { base64ToBlob, bytesToBase64 } from './base64'
+import { base64ToBlob, base64ToBytes, bytesToBase64 } from './base64'
 
 describe('base64', () => {
   it('字节与 base64 之间往返转换后内容不变', async () => {
@@ -22,5 +22,17 @@ describe('base64', () => {
 
     expect(() => bytesToBase64(large)).not.toThrow()
     expect(bytesToBase64(large)).toBe(btoa('A'.repeat(300_000)))
+  })
+})
+
+describe('base64ToBytes', () => {
+  it('还原出与 bytesToBase64 输入完全一致的字节', () => {
+    const bytes = new Uint8Array([0x89, 0x50, 0x4E, 0x47, 0x00, 0xFF, 0x7F])
+
+    expect(base64ToBytes(bytesToBase64(bytes))).toEqual(bytes)
+  })
+
+  it('空串还原为空字节数组', () => {
+    expect(base64ToBytes('')).toEqual(new Uint8Array())
   })
 })
