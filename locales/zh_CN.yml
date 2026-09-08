@@ -36,5 +36,10 @@ card:
   downloaded: 已下载
   retry: 重试
   copy: 复制
+  copyUrl: 链接
+  copyImage: 图片
+  copyDataUri: Data URI
+  copyLinkTag: <link>
+  copyImageOnlyPng: 系统剪贴板只接受 PNG 格式的图片
   copied: 已复制
   copyFailed: 失败

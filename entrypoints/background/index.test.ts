@@ -2,6 +2,7 @@ import type { ScanResult } from '@/utils/types'
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest'
 import { fakeBrowser } from 'wxt/testing/fake-browser'
 import { downloadIconFile } from '@/utils/downloads'
+import { fetchIconBytes } from '@/utils/icon-bytes'
 import { discoverIcons } from '@/utils/icon-discovery'
 import { sendMessage } from '@/utils/messaging'
 import background from './index'
@@ -9,6 +10,7 @@ import background from './index'
 // 隔离下层：background 只做"取 tab → 调 discoverIcons / 转发 downloadIconFile"的薄编排
 vi.mock('@/utils/icon-discovery', () => ({ discoverIcons: vi.fn() }))
 vi.mock('@/utils/downloads', () => ({ downloadIconFile: vi.fn() }))
+vi.mock('@/utils/icon-bytes', () => ({ fetchIconBytes: vi.fn() }))
 
 function makeTab(overrides: Partial<Browser.tabs.Tab> = {}): Browser.tabs.Tab {
   return {
@@ -74,5 +76,14 @@ describe('background message handlers', () => {
 
     expect(downloadIconFile).toHaveBeenCalledWith('https://example.com/favicon.ico', 'example.com-favicon.ico')
     expect(result).toEqual({ success: true, downloadId: 7 })
+  })
+
+  it('fetchIconBytes：转发 url 给 fetchIconBytes', async () => {
+    vi.mocked(fetchIconBytes).mockResolvedValue({ success: true, base64: 'AAEC', mimeType: 'image/png' })
+
+    const result = await sendMessage('fetchIconBytes', { url: 'https://example.com/a.png' })
+
+    expect(fetchIconBytes).toHaveBeenCalledWith('https://example.com/a.png')
+    expect(result).toEqual({ success: true, base64: 'AAEC', mimeType: 'image/png' })
   })
 })

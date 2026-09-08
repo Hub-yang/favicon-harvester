@@ -33,6 +33,14 @@ export interface DownloadResult {
   error?: string
 }
 
+/** 取图标字节的结果：成功时带 base64 与 MIME，供 popup 拼 Data URI 或写剪贴板 */
+export interface IconBytesResult {
+  success: boolean
+  base64?: string
+  mimeType?: string
+  error?: string
+}
+
 /** scan-dom-icons.ts 注入脚本的返回值 */
 export interface DomScanResult {
   icons: {

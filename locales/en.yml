@@ -35,5 +35,10 @@ card:
   downloaded: Downloaded
   retry: Retry
   copy: Copy
+  copyUrl: Link
+  copyImage: Image
+  copyDataUri: Data URI
+  copyLinkTag: <link>
+  copyImageOnlyPng: The system clipboard only accepts PNG images
   copied: Copied
   copyFailed: Failed
