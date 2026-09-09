@@ -29,9 +29,9 @@ toolbar:
 card:
   sourceTab: Browser fallback
   unknownSize: Size unknown
-  download: Download
-  downloading: Downloading…
-  downloaded: Downloaded
+  download: Save
+  downloading: Saving…
+  downloaded: Saved
   retry: Retry
   copy: Copy
   copyUrl: Link

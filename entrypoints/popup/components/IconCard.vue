@@ -150,15 +150,15 @@ async function handleCopy(kind: CopyKind) {
         <div class="truncate text-[var(--fh-text)]">
           {{ sizeLabel }}
         </div>
-        <div class="text-[11px] text-[var(--fh-muted)]">
+        <div class="truncate text-[11px] text-[var(--fh-muted)]">
           {{ SOURCE_LABEL[candidate.source] }} · {{ formatLabel }}
         </div>
       </div>
 
-      <div class="flex-none flex flex-col gap-1 w-[58px]">
+      <div class="flex-none flex flex-col gap-1 w-[72px]">
         <button
           data-testid="download-button"
-          class="px-2 py-1 text-[12px] rounded border-0 cursor-pointer text-white bg-[var(--fh-accent)] hover:bg-[var(--fh-accent-hover)] disabled:cursor-default disabled:opacity-60"
+          class="truncate px-2 py-1 text-[12px] rounded border-0 cursor-pointer text-white bg-[var(--fh-accent)] hover:bg-[var(--fh-accent-hover)] disabled:cursor-default disabled:opacity-60"
           :disabled="downloadState === 'downloading'"
           @click="handleDownload"
         >
@@ -166,7 +166,7 @@ async function handleCopy(kind: CopyKind) {
         </button>
         <button
           data-testid="copy-button"
-          class="px-2 py-1 text-[12px] rounded cursor-pointer bg-transparent border border-solid border-[var(--fh-border)] text-[var(--fh-muted)] hover:border-[var(--fh-accent)] hover:text-[var(--fh-accent)]"
+          class="truncate px-2 py-1 text-[12px] rounded cursor-pointer bg-transparent border border-solid border-[var(--fh-border)] text-[var(--fh-muted)] hover:border-[var(--fh-accent)] hover:text-[var(--fh-accent)]"
           @click="expanded = !expanded"
         >
           {{ i18n.t('card.copy') }}{{ expanded ? '▴' : '▾' }}
