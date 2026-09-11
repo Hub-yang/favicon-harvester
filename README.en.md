@@ -53,7 +53,9 @@ Then load `.output/chrome-mv3` via steps 2 and 3 above. For development, `pnpm d
 
 ## 🖱 Usage
 
-Open any page → click the toolbar icon → download icons one at a time, or grab them all as a single ZIP (with an `icons.json` inside recording each icon's source, size and format). Individual icons can also be copied as a link, an image, a Data URI, or a ready-made `<link>` tag.
+Open any page → click the toolbar icon. Every icon in the panel shows its size, format and file weight; click a thumbnail to enlarge it and toggle the backdrop between checkerboard, light and dark to inspect transparent edges.
+
+Download icons one at a time, or grab them all as a single ZIP (with an `icons.json` inside recording each icon's source, size and format). Individual icons can also be copied as a link, an image, a Data URI, or a ready-made `<link>` tag.
 
 ## 🔬 How the discovery works
 
