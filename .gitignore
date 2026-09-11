@@ -24,6 +24,10 @@ CLAUDE.md
 # 迭代排期表，仅本地使用，不随开源仓库分发
 ROADMAP.md
 
+# popup 排版 harness 生成器，仅本地开发验证使用，不随开源仓库分发
+# （产物 .output/layout-harness.html 已被上面的 .output 覆盖）
+scripts/gen-layout-harness.py
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
