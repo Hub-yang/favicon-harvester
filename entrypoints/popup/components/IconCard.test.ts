@@ -35,6 +35,18 @@ function stubClipboardItem() {
   return constructed
 }
 
+function thumbnail(wrapper: ReturnType<typeof mountCard>) {
+  return wrapper.get('[data-testid="thumbnail-button"]')
+}
+
+function preview(wrapper: ReturnType<typeof mountCard>) {
+  return wrapper.find('[data-testid="preview"]')
+}
+
+function bgButton(wrapper: ReturnType<typeof mountCard>) {
+  return wrapper.get('[data-testid="preview-bg-button"]')
+}
+
 function option(wrapper: ReturnType<typeof mountCard>, kind: string) {
   return wrapper.get(`[data-testid="copy-option-${kind}"]`)
 }
@@ -54,6 +66,29 @@ describe('iconCard', () => {
       const wrapper = mountCard({ url: 'https://example.com/a.png', source: 'link', width: 24, height: 24 })
 
       expect(wrapper.text()).toContain('24×24')
+    })
+
+    it('有字节数时展示人类可读的文件体积', () => {
+      const wrapper = mountCard({ url: 'https://example.com/a.png', source: 'link', width: 24, height: 24, byteLength: 4300 })
+
+      expect(wrapper.text()).toContain('4.2 KB')
+    })
+
+    it('没拿到字节数时不显示体积，也不留下空占位', () => {
+      const wrapper = mountCard({ url: 'https://example.com/a.png', source: 'link', width: 24, height: 24 })
+
+      expect(wrapper.find('[data-testid="icon-size-bytes"]').exists()).toBe(false)
+    })
+
+    it('文件名很长时体积仍然可见，不被挤掉', () => {
+      const wrapper = mountCard({
+        url: 'https://example.com/apple-touch-icon-precomposed.png',
+        source: 'well-known',
+        sourceDetail: 'apple-touch-icon-precomposed.png',
+        byteLength: 1800,
+      })
+
+      expect(wrapper.get('[data-testid="icon-size-bytes"]').text()).toBe('1.8 KB')
     })
 
     it('无尺寸时回退到 sourceDetail', () => {
@@ -264,6 +299,97 @@ describe('iconCard', () => {
 
       expect(navigator.clipboard.writeText).not.toHaveBeenCalled()
       expect(option(wrapper, 'data-uri').text()).toBe('失败')
+    })
+  })
+
+  describe('放大预览', () => {
+    const SMALL: IconCandidate = { url: 'https://example.com/a.png', source: 'link', width: 32, height: 32, mimeType: 'image/png' }
+
+    it('默认不展开，点击缩略图后展开预览区', async () => {
+      const wrapper = mountCard(SMALL)
+      expect(preview(wrapper).exists()).toBe(false)
+
+      await thumbnail(wrapper).trigger('click')
+
+      expect(preview(wrapper).exists()).toBe(true)
+    })
+
+    it('再次点击缩略图收起预览区', async () => {
+      const wrapper = mountCard(SMALL)
+      await thumbnail(wrapper).trigger('click')
+      await thumbnail(wrapper).trigger('click')
+
+      expect(preview(wrapper).exists()).toBe(false)
+    })
+
+    it('预览区默认用棋盘格底衬，与缩略图一致', async () => {
+      const wrapper = mountCard(SMALL)
+      await thumbnail(wrapper).trigger('click')
+
+      expect(preview(wrapper).classes()).toContain('fh-checker')
+    })
+
+    it('底色按钮在棋盘格 / 白底 / 黑底之间轮换', async () => {
+      const wrapper = mountCard(SMALL)
+      await thumbnail(wrapper).trigger('click')
+
+      expect(bgButton(wrapper).text()).toBe('棋盘格')
+
+      await bgButton(wrapper).trigger('click')
+      expect(bgButton(wrapper).text()).toBe('白底')
+      expect(preview(wrapper).classes()).not.toContain('fh-checker')
+
+      await bgButton(wrapper).trigger('click')
+      expect(bgButton(wrapper).text()).toBe('黑底')
+
+      await bgButton(wrapper).trigger('click')
+      expect(bgButton(wrapper).text()).toBe('棋盘格')
+      expect(preview(wrapper).classes()).toContain('fh-checker')
+    })
+
+    it('点底色按钮不会连带收起预览区', async () => {
+      const wrapper = mountCard(SMALL)
+      await thumbnail(wrapper).trigger('click')
+      await bgButton(wrapper).trigger('click')
+
+      expect(preview(wrapper).exists()).toBe(true)
+    })
+
+    it('小图标放大时用 pixelated，让像素边缘看得清而不是糊成一团', async () => {
+      const wrapper = mountCard(SMALL)
+      await thumbnail(wrapper).trigger('click')
+
+      expect(wrapper.get('[data-testid="preview-image"]').attributes('style')).toContain('pixelated')
+    })
+
+    it('矢量 SVG 放大不糊，不加 pixelated', async () => {
+      const wrapper = mountCard({ url: 'https://example.com/a.svg', source: 'link', width: 32, height: 32, mimeType: 'image/svg+xml' })
+      await thumbnail(wrapper).trigger('click')
+
+      expect(wrapper.get('[data-testid="preview-image"]').attributes('style')).not.toContain('pixelated')
+    })
+
+    it('尺寸已经不小于预览区的图标是缩小显示，不加 pixelated', async () => {
+      const wrapper = mountCard({ url: 'https://example.com/a.png', source: 'link', width: 512, height: 512, mimeType: 'image/png' })
+      await thumbnail(wrapper).trigger('click')
+
+      expect(wrapper.get('[data-testid="preview-image"]').attributes('style')).not.toContain('pixelated')
+    })
+
+    it('尺寸未知时不猜测，不加 pixelated', async () => {
+      const wrapper = mountCard({ url: 'https://example.com/f.ico', source: 'well-known', sourceDetail: 'favicon.ico' })
+      await thumbnail(wrapper).trigger('click')
+
+      expect(wrapper.get('[data-testid="preview-image"]').attributes('style')).not.toContain('pixelated')
+    })
+
+    it('预览区与复制选项互相独立，可以同时展开', async () => {
+      const wrapper = mountCard(SMALL)
+      await thumbnail(wrapper).trigger('click')
+      await expand(wrapper)
+
+      expect(preview(wrapper).exists()).toBe(true)
+      expect(wrapper.find('[data-testid="copy-option-url"]').exists()).toBe(true)
     })
   })
 })

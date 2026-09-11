@@ -4,6 +4,7 @@ import { useTimeoutFn } from '@vueuse/core'
 import { computed, ref } from 'vue'
 import { i18n } from '#i18n'
 import { base64ToBlob } from '@/utils/base64'
+import { formatBytes } from '@/utils/format-bytes'
 import { buildFilename, resolveIconExtension } from '@/utils/icon-naming'
 import { buildLinkTag } from '@/utils/link-tag'
 import { sendMessage } from '@/utils/messaging'
@@ -19,6 +20,15 @@ type CopyKind = 'url' | 'image' | 'data-uri' | 'link-tag'
 const COPY_KINDS: CopyKind[] = ['url', 'image', 'data-uri', 'link-tag']
 
 const expanded = ref(false)
+const previewOpen = ref(false)
+
+/** 预览底衬三档轮换，顺序即点击轮换顺序 */
+type PreviewBg = 'checker' | 'light' | 'dark'
+const PREVIEW_BGS: PreviewBg[] = ['checker', 'light', 'dark']
+const previewBg = ref<PreviewBg>('checker')
+
+/** 预览区高度，同时也是判断该不该按像素放大的阈值 */
+const PREVIEW_HEIGHT = 120
 /** 只记录"哪个选项"处于"什么反馈态"，避免点了图片却在链接上显示已复制 */
 const copyFeedback = ref<{ kind: CopyKind, state: 'copied' | 'error' } | null>(null)
 
@@ -51,6 +61,35 @@ const COPY_KIND_LABEL: Record<CopyKind, string> = {
 
 const canCopyImage = computed(() => props.candidate.mimeType === PNG_MIME)
 
+const PREVIEW_BG_CLASS: Record<PreviewBg, string> = {
+  checker: 'fh-checker',
+  light: 'bg-white',
+  dark: 'bg-black',
+}
+
+const PREVIEW_BG_LABEL: Record<PreviewBg, string> = {
+  checker: i18n.t('card.bgChecker'),
+  light: i18n.t('card.bgLight'),
+  dark: i18n.t('card.bgDark'),
+}
+
+function cyclePreviewBg() {
+  const next = (PREVIEW_BGS.indexOf(previewBg.value) + 1) % PREVIEW_BGS.length
+  previewBg.value = PREVIEW_BGS[next]!
+}
+
+/*
+ * 小图标放大到预览区会被浏览器平滑插值糊成一团，而"看清像素边缘"正是放大预览的目的，
+ * 所以只在真的放大时切到 pixelated：矢量图放大不糊，尺寸未知则不做假设。
+ */
+const previewRendering = computed(() => {
+  const { mimeType, width } = props.candidate
+  if (mimeType === 'image/svg+xml' || width === undefined || width >= PREVIEW_HEIGHT)
+    return 'auto'
+
+  return 'pixelated'
+})
+
 const sizeLabel = computed(() => {
   const { width, height, sourceDetail } = props.candidate
   if (width !== undefined && height !== undefined)
@@ -60,6 +99,12 @@ const sizeLabel = computed(() => {
 
 // 格式标签：与下载文件名的扩展名同源，保证显示格式与实际下载扩展名一致
 const formatLabel = computed(() => resolveIconExtension(props.candidate).toUpperCase())
+
+// 探测阶段没取到字节数时（理论上不会，但类型上是可选的）整块不渲染，不留空占位
+const byteLabel = computed(() => {
+  const { byteLength } = props.candidate
+  return byteLength === undefined ? undefined : formatBytes(byteLength)
+})
 
 function copyKindLabel(kind: CopyKind): string {
   if (copyFeedback.value?.kind !== kind)
@@ -137,18 +182,33 @@ async function handleCopy(kind: CopyKind) {
   <li class="px-3 py-2">
     <div class="flex items-center gap-3">
       <!-- img 直连候选 URL，不走 fetch，因此不受 CORS 限制 -->
-      <div class="fh-checker flex-none w-10 h-10 rounded flex items-center justify-center overflow-hidden">
+      <button
+        data-testid="thumbnail-button"
+        type="button"
+        class="fh-checker flex-none w-10 h-10 p-0 rounded border-0 cursor-pointer flex items-center justify-center overflow-hidden"
+        :title="i18n.t('card.preview')"
+        @click="previewOpen = !previewOpen"
+      >
         <img
           :src="candidate.url"
           alt=""
           class="max-w-full max-h-full object-contain"
           @error="emit('loadError', candidate.url)"
         >
-      </div>
+      </button>
 
       <div class="flex-1 min-w-0">
-        <div class="truncate text-[var(--fh-text)]">
-          {{ sizeLabel }}
+        <div class="flex items-baseline gap-2">
+          <div class="flex-1 min-w-0 truncate text-[var(--fh-text)]">
+            {{ sizeLabel }}
+          </div>
+          <div
+            v-if="byteLabel"
+            data-testid="icon-size-bytes"
+            class="flex-none text-[11px] text-[var(--fh-muted)]"
+          >
+            {{ byteLabel }}
+          </div>
         </div>
         <div class="truncate text-[11px] text-[var(--fh-muted)]">
           {{ SOURCE_LABEL[candidate.source] }} · {{ formatLabel }}
@@ -172,6 +232,32 @@ async function handleCopy(kind: CopyKind) {
           {{ i18n.t('card.copy') }}{{ expanded ? '▴' : '▾' }}
         </button>
       </div>
+    </div>
+
+    <!-- 预览区与下方复制行同理走文档流，且与复制行互相独立，可同时展开 -->
+    <div
+      v-if="previewOpen"
+      data-testid="preview"
+      class="relative mt-2 h-[120px] rounded overflow-hidden flex items-center justify-center"
+      :class="PREVIEW_BG_CLASS[previewBg]"
+    >
+      <img
+        data-testid="preview-image"
+        :src="candidate.url"
+        alt=""
+        class="max-w-full max-h-full object-contain"
+        :style="{ imageRendering: previewRendering }"
+        @error="emit('loadError', candidate.url)"
+      >
+      <button
+        data-testid="preview-bg-button"
+        type="button"
+        class="absolute top-1 right-1 px-1.5 py-0.5 text-[11px] rounded cursor-pointer bg-[var(--fh-bg)] border border-solid border-[var(--fh-border)] text-[var(--fh-muted)] hover:border-[var(--fh-accent)] hover:text-[var(--fh-accent)]"
+        :title="i18n.t('card.previewBg')"
+        @click="cyclePreviewBg"
+      >
+        {{ PREVIEW_BG_LABEL[previewBg] }}
+      </button>
     </div>
 
     <!-- 展开行走文档流而非浮层：popup 高度有限，绝对定位的菜单在末尾卡片上会被裁掉 -->

@@ -39,5 +39,10 @@ card:
   copyDataUri: Data URI
   copyLinkTag: <link>
   copyImageOnlyPng: The system clipboard only accepts PNG images
+  preview: Preview
+  previewBg: Toggle preview background
+  bgChecker: Checker
+  bgLight: Light
+  bgDark: Dark
   copied: Copied
   copyFailed: Failed

@@ -26,6 +26,7 @@ export async function probeCandidate(candidate: IconCandidate, timeoutMs = 5000)
     return {
       ...candidate,
       mimeType,
+      byteLength: bytes.length,
       width: measured?.width ?? candidate.width,
       height: measured?.height ?? candidate.height,
     }

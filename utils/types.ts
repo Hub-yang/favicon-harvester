@@ -18,6 +18,8 @@ export interface IconCandidate {
   height?: number
   /** probeCandidate 探测后回填，供命名规则推导扩展名 */
   mimeType?: string
+  /** probeCandidate 探测时顺手回填的文件字节数，供卡片展示体积 */
+  byteLength?: number
 }
 
 /** background 扫描流程的最终返回结果 */

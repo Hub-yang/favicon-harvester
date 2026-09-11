@@ -35,6 +35,7 @@ describe('probeCandidate', () => {
       url: 'https://example.com/icon.png',
       source: 'link',
       mimeType: 'image/png',
+      byteLength: 8,
       width: 16,
       height: 16,
     })
@@ -62,6 +63,7 @@ describe('probeCandidate', () => {
       url: 'https://example.com/icon.svg',
       source: 'link',
       mimeType: 'image/svg+xml',
+      byteLength: 34,
       width: 24,
       height: 24,
     })
@@ -94,6 +96,7 @@ describe('probeCandidate', () => {
       url: 'https://example.com/icon.png',
       source: 'link',
       mimeType: 'image/png',
+      byteLength: 8,
       width: 48,
       height: 48,
     })
@@ -103,5 +106,15 @@ describe('probeCandidate', () => {
     vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new DOMException('aborted', 'AbortError')))
 
     await expect(probeCandidate(linkCandidate())).resolves.toBeUndefined()
+  })
+
+  it('回填字节数，供卡片展示文件体积', async () => {
+    const twelveBytes = new Uint8Array([...PNG_BYTES, 1, 2, 3, 4])
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(bytesResponse(twelveBytes, 'image/png')))
+    vi.stubGlobal('createImageBitmap', vi.fn().mockResolvedValue({ width: 16, height: 16, close: vi.fn() }))
+
+    const result = await probeCandidate(linkCandidate())
+
+    expect(result?.byteLength).toBe(12)
   })
 })

@@ -40,5 +40,10 @@ card:
   copyDataUri: Data URI
   copyLinkTag: <link>
   copyImageOnlyPng: 系统剪贴板只接受 PNG 格式的图片
+  preview: 预览
+  previewBg: 切换预览背景
+  bgChecker: 棋盘格
+  bgLight: 白底
+  bgDark: 黑底
   copied: 已复制
   copyFailed: 失败
