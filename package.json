@@ -1,7 +1,7 @@
 {
   "name": "favicon-harvester",
   "type": "module",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "private": true,
   "packageManager": "pnpm@11.15.1",
   "description": "扫描当前网站正在使用的图标（favicon 等），去重后列出全部结果，单个下载或一次全部下载都可以，不依赖第三方服务。",
