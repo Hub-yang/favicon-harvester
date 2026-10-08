@@ -29,4 +29,12 @@ describe('scanRetryPanel', () => {
     expect(wrapper.text()).toContain('当前网站暂无可获取的图标')
     expect(wrapper.find('button').exists()).toBe(false)
   })
+
+  it('重试按钮带重试图标，重试中换成转圈图标', () => {
+    const icon = (retrying: boolean) => mount(ScanRetryPanel, { props: { state: 'no-results', retrying } }).get('button [class*="i-lucide-"]')
+
+    expect(icon(false).classes()).toContain('i-lucide-rotate-cw')
+    expect(icon(false).attributes('aria-hidden')).toBe('true')
+    expect(icon(true).classes()).toEqual(expect.arrayContaining(['i-lucide-loader-circle', 'animate-spin']))
+  })
 })

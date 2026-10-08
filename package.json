@@ -55,6 +55,7 @@
     "@commitlint/cli": "^21.2.1",
     "@commitlint/config-conventional": "^21.2.0",
     "@huberyyang/todo-scripts": "^1.0.12",
+    "@iconify-json/lucide": "^1.2.140",
     "@vitejs/plugin-vue": "^6.0.8",
     "@vitest/coverage-v8": "^4.1.10",
     "@vue/test-utils": "^2.4.11",

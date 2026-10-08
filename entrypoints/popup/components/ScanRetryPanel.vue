@@ -15,10 +15,11 @@ defineEmits<{ retry: [] }>()
 
     <button
       v-if="state === 'no-results'"
-      class="px-2.5 py-1 text-[12px] rounded border-0 cursor-pointer text-white bg-[var(--fh-accent)] hover:bg-[var(--fh-accent-hover)] disabled:cursor-default disabled:opacity-60"
+      class="flex items-center gap-1 px-2.5 py-1 text-[12px] rounded border-0 cursor-pointer text-white bg-[var(--fh-accent)] hover:bg-[var(--fh-accent-hover)] disabled:cursor-default disabled:opacity-60"
       :disabled="retrying"
       @click="$emit('retry')"
     >
+      <span :class="retrying ? 'i-lucide-loader-circle animate-spin' : 'i-lucide-rotate-cw'" class="text-[13px]" aria-hidden="true" />
       {{ retrying ? i18n.t('retry.retrying') : i18n.t('retry.retry') }}
     </button>
   </div>

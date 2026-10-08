@@ -12,6 +12,14 @@ const props = defineProps<{
 
 defineEmits<{ download: [] }>()
 
+// 类名必须整串字面量写出，UnoCSS 才能在构建期扫描到并生成对应图标
+const BUTTON_ICON: Record<typeof props.state, string> = {
+  idle: 'i-lucide-file-archive',
+  running: 'i-lucide-loader-circle animate-spin',
+  done: 'i-lucide-check',
+  error: 'i-lucide-rotate-cw',
+}
+
 const buttonLabel = computed(() => {
   switch (props.state) {
     case 'running':
@@ -31,10 +39,11 @@ const buttonLabel = computed(() => {
   <div class="flex items-center justify-between gap-2 px-3 py-2 border-b border-[var(--fh-border)]">
     <span class="text-[12px] text-[var(--fh-muted)]">{{ i18n.t('toolbar.iconCount', count) }}</span>
     <button
-      class="flex-none px-2.5 py-1 text-[12px] rounded border-0 cursor-pointer text-white bg-[var(--fh-accent)] hover:bg-[var(--fh-accent-hover)] disabled:cursor-default disabled:opacity-60"
+      class="flex-none flex items-center gap-1 px-2.5 py-1 text-[12px] rounded border-0 cursor-pointer text-white bg-[var(--fh-accent)] hover:bg-[var(--fh-accent-hover)] disabled:cursor-default disabled:opacity-60"
       :disabled="state === 'running'"
       @click="$emit('download')"
     >
+      <span :class="BUTTON_ICON[state]" class="text-[13px]" aria-hidden="true" />
       {{ buttonLabel }}
     </button>
   </div>

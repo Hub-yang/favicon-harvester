@@ -1,3 +1,4 @@
+import type { DOMWrapper } from '@vue/test-utils'
 import type { IconCandidate } from '@/utils/types'
 import { flushPromises, mount } from '@vue/test-utils'
 import { afterEach, describe, expect, it, vi } from 'vitest'
@@ -53,6 +54,15 @@ function option(wrapper: ReturnType<typeof mountCard>, kind: string) {
 
 async function expand(wrapper: ReturnType<typeof mountCard>) {
   await copyButton(wrapper).trigger('click')
+}
+
+/** 只取该元素内部的图标名，断言的是「哪个按钮挂着哪个图标」，而不是页面上某处有这个类 */
+function lucideIcons(el: Omit<DOMWrapper<Element>, 'exists'>) {
+  return el.findAll('[class*="i-lucide-"]').map(icon => icon.classes().find(c => c.startsWith('i-lucide-')))
+}
+
+function iconEl(el: Omit<DOMWrapper<Element>, 'exists'>) {
+  return el.get('[class*="i-lucide-"]')
 }
 
 describe('iconCard', () => {
@@ -390,6 +400,118 @@ describe('iconCard', () => {
 
       expect(preview(wrapper).exists()).toBe(true)
       expect(wrapper.find('[data-testid="copy-option-url"]').exists()).toBe(true)
+    })
+  })
+
+  describe('按钮图标', () => {
+    it('下载按钮按状态切换图标：下载 → 转圈 → 对勾', async () => {
+      let resolveDownload: (v: { success: boolean }) => void = () => {}
+      vi.mocked(sendMessage).mockReturnValue(new Promise((resolve) => {
+        resolveDownload = resolve
+      }) as ReturnType<typeof sendMessage>)
+
+      const wrapper = mountCard({ url: 'https://example.com/a.png', source: 'link' })
+      expect(lucideIcons(downloadButton(wrapper))).toEqual(['i-lucide-download'])
+
+      await downloadButton(wrapper).trigger('click')
+      expect(lucideIcons(downloadButton(wrapper))).toEqual(['i-lucide-loader-circle'])
+      expect(iconEl(downloadButton(wrapper)).classes()).toContain('animate-spin')
+
+      resolveDownload({ success: true })
+      await flushPromises()
+      expect(lucideIcons(downloadButton(wrapper))).toEqual(['i-lucide-check'])
+    })
+
+    it('下载失败时图标换成重试', async () => {
+      vi.mocked(sendMessage).mockResolvedValue({ success: false, error: 'boom' } as Awaited<ReturnType<typeof sendMessage>>)
+
+      const wrapper = mountCard({ url: 'https://example.com/a.png', source: 'link' })
+      await downloadButton(wrapper).trigger('click')
+      await flushPromises()
+
+      expect(lucideIcons(downloadButton(wrapper))).toEqual(['i-lucide-rotate-cw'])
+    })
+
+    it('复制主按钮带复制图标，展开箭头随状态翻转且不再用字符画', async () => {
+      const wrapper = mountCard({ url: 'https://example.com/a.png', source: 'link' })
+      expect(lucideIcons(copyButton(wrapper))).toEqual(['i-lucide-copy', 'i-lucide-chevron-down'])
+      expect(copyButton(wrapper).text()).toBe('复制')
+
+      await expand(wrapper)
+      expect(lucideIcons(copyButton(wrapper))).toEqual(['i-lucide-copy', 'i-lucide-chevron-up'])
+    })
+
+    it('四个复制选项各有对应图标', async () => {
+      const wrapper = mountCard({ url: 'https://example.com/a.png', source: 'link', mimeType: 'image/png' })
+      await expand(wrapper)
+
+      expect(lucideIcons(option(wrapper, 'url'))).toEqual(['i-lucide-link'])
+      expect(lucideIcons(option(wrapper, 'image'))).toEqual(['i-lucide-image'])
+      expect(lucideIcons(option(wrapper, 'data-uri'))).toEqual(['i-lucide-binary'])
+      expect(lucideIcons(option(wrapper, 'link-tag'))).toEqual(['i-lucide-code'])
+    })
+
+    it('复制成功的选项换成对勾，其他选项图标不变', async () => {
+      stubClipboard()
+
+      const wrapper = mountCard({ url: 'https://example.com/a.png', source: 'link' })
+      await expand(wrapper)
+      await option(wrapper, 'url').trigger('click')
+      await flushPromises()
+
+      expect(lucideIcons(option(wrapper, 'url'))).toEqual(['i-lucide-check'])
+      expect(lucideIcons(option(wrapper, 'link-tag'))).toEqual(['i-lucide-code'])
+    })
+
+    it('复制失败的选项换成叉号', async () => {
+      stubClipboard(async () => {
+        throw new Error('NotAllowedError')
+      })
+
+      const wrapper = mountCard({ url: 'https://example.com/a.png', source: 'link' })
+      await expand(wrapper)
+      await option(wrapper, 'url').trigger('click')
+      await flushPromises()
+
+      expect(lucideIcons(option(wrapper, 'url'))).toEqual(['i-lucide-x'])
+    })
+
+    it('预览底色按钮图标随三档轮换：网格 → 太阳 → 月亮', async () => {
+      const wrapper = mountCard({ url: 'https://example.com/a.png', source: 'link', width: 32, height: 32 })
+      await thumbnail(wrapper).trigger('click')
+
+      expect(lucideIcons(bgButton(wrapper))).toEqual(['i-lucide-grid-2x2'])
+      await bgButton(wrapper).trigger('click')
+      expect(lucideIcons(bgButton(wrapper))).toEqual(['i-lucide-sun'])
+      await bgButton(wrapper).trigger('click')
+      expect(lucideIcons(bgButton(wrapper))).toEqual(['i-lucide-moon'])
+    })
+
+    it('图标是纯装饰，对读屏隐藏，按钮的可读名称仍由文字提供', () => {
+      const wrapper = mountCard({ url: 'https://example.com/a.png', source: 'link' })
+
+      expect(iconEl(downloadButton(wrapper)).attributes('aria-hidden')).toBe('true')
+      expect(iconEl(copyButton(wrapper)).attributes('aria-hidden')).toBe('true')
+    })
+  })
+
+  describe('按钮布局', () => {
+    it('下载与复制按钮并排在第一行尺寸右侧，下载在前、复制在后', () => {
+      const wrapper = mountCard({ url: 'https://example.com/a.png', source: 'link', width: 24, height: 24 })
+      const download = downloadButton(wrapper).element
+      const copy = copyButton(wrapper).element
+      const sizeLabel = wrapper.get('[data-testid="icon-size-label"]').element
+
+      expect(download.nextElementSibling).toBe(copy)
+      expect(sizeLabel.nextElementSibling).toBe(download.parentElement)
+    })
+
+    it('体积挪到第二行，与来源 · 格式同行', () => {
+      const wrapper = mountCard({ url: 'https://example.com/a.png', source: 'link', width: 24, height: 24, mimeType: 'image/png', byteLength: 4300 })
+      const bytes = wrapper.get('[data-testid="icon-size-bytes"]').element
+
+      expect(bytes.parentElement!.textContent).toContain('DOM link · PNG')
+      expect(bytes.parentElement!.textContent).not.toContain('24×24')
     })
   })
 })

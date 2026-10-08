@@ -4,6 +4,11 @@ import IconToolbar from './IconToolbar.vue'
 
 type ToolbarProps = InstanceType<typeof IconToolbar>['$props']
 
+/** 只取按钮内部的图标名，断言的是「按钮挂着哪个图标」 */
+function buttonIcons(wrapper: ReturnType<typeof mountToolbar>) {
+  return wrapper.get('button').findAll('[class*="i-lucide-"]').map(icon => icon.classes().find(c => c.startsWith('i-lucide-')))
+}
+
 function mountToolbar(props: Partial<ToolbarProps> = {}) {
   return mount(IconToolbar, {
     props: { count: 6, state: 'idle', skipped: 0, ...props } as ToolbarProps,
@@ -49,5 +54,31 @@ describe('iconToolbar', () => {
 
   it('打包失败时按钮文案提示重试', () => {
     expect(mountToolbar({ state: 'error' }).get('button').text()).toBe('打包失败，重试')
+  })
+
+  describe('按钮图标', () => {
+    it('空闲时为压缩包图标', () => {
+      expect(buttonIcons(mountToolbar())).toEqual(['i-lucide-file-archive'])
+    })
+
+    it('打包中为转圈图标', () => {
+      const wrapper = mountToolbar({ state: 'running' })
+
+      expect(buttonIcons(wrapper)).toEqual(['i-lucide-loader-circle'])
+      expect(wrapper.get('button [class*="i-lucide-"]').classes()).toContain('animate-spin')
+    })
+
+    it('打包完成（含有跳过）为对勾图标', () => {
+      expect(buttonIcons(mountToolbar({ state: 'done' }))).toEqual(['i-lucide-check'])
+      expect(buttonIcons(mountToolbar({ state: 'done', skipped: 2 }))).toEqual(['i-lucide-check'])
+    })
+
+    it('打包失败为重试图标', () => {
+      expect(buttonIcons(mountToolbar({ state: 'error' }))).toEqual(['i-lucide-rotate-cw'])
+    })
+
+    it('图标对读屏隐藏', () => {
+      expect(mountToolbar().get('button [class*="i-lucide-"]').attributes('aria-hidden')).toBe('true')
+    })
   })
 })

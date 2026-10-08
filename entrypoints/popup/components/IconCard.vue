@@ -52,6 +52,21 @@ const BUTTON_LABEL: Record<DownloadState, string> = {
   error: i18n.t('card.retry'),
 }
 
+// 图标类名都整串字面量写出，UnoCSS 才能在构建期扫描到并生成对应图标
+const BUTTON_ICON: Record<DownloadState, string> = {
+  idle: 'i-lucide-download',
+  downloading: 'i-lucide-loader-circle animate-spin',
+  done: 'i-lucide-check',
+  error: 'i-lucide-rotate-cw',
+}
+
+const COPY_KIND_ICON: Record<CopyKind, string> = {
+  'url': 'i-lucide-link',
+  'image': 'i-lucide-image',
+  'data-uri': 'i-lucide-binary',
+  'link-tag': 'i-lucide-code',
+}
+
 const COPY_KIND_LABEL: Record<CopyKind, string> = {
   'url': i18n.t('card.copyUrl'),
   'image': i18n.t('card.copyImage'),
@@ -65,6 +80,12 @@ const PREVIEW_BG_CLASS: Record<PreviewBg, string> = {
   checker: 'fh-checker',
   light: 'bg-white',
   dark: 'bg-black',
+}
+
+const PREVIEW_BG_ICON: Record<PreviewBg, string> = {
+  checker: 'i-lucide-grid-2x2',
+  light: 'i-lucide-sun',
+  dark: 'i-lucide-moon',
 }
 
 const PREVIEW_BG_LABEL: Record<PreviewBg, string> = {
@@ -105,6 +126,13 @@ const byteLabel = computed(() => {
   const { byteLength } = props.candidate
   return byteLength === undefined ? undefined : formatBytes(byteLength)
 })
+
+function copyKindIcon(kind: CopyKind): string {
+  if (copyFeedback.value?.kind !== kind)
+    return COPY_KIND_ICON[kind]
+
+  return copyFeedback.value.state === 'copied' ? 'i-lucide-check' : 'i-lucide-x'
+}
 
 function copyKindLabel(kind: CopyKind): string {
   if (copyFeedback.value?.kind !== kind)
@@ -180,7 +208,7 @@ async function handleCopy(kind: CopyKind) {
 
 <template>
   <li class="px-3 py-2">
-    <div class="flex items-center gap-3">
+    <div class="flex items-center gap-2">
       <!-- img 直连候选 URL，不走 fetch，因此不受 CORS 限制 -->
       <button
         data-testid="thumbnail-button"
@@ -198,9 +226,35 @@ async function handleCopy(kind: CopyKind) {
       </button>
 
       <div class="flex-1 min-w-0">
-        <div class="flex items-baseline gap-2">
-          <div class="flex-1 min-w-0 truncate text-[var(--fh-text)]">
+        <!-- 第一行留给尺寸与两颗操作按钮；体积挪到第二行，避免与按钮争宽被挤掉 -->
+        <div class="flex items-center gap-1.5">
+          <div data-testid="icon-size-label" class="flex-1 min-w-0 truncate text-[var(--fh-text)]">
             {{ sizeLabel }}
+          </div>
+          <div class="flex-none flex gap-1">
+            <button
+              data-testid="download-button"
+              class="w-[70px] flex items-center justify-center gap-0.5 px-1 py-0.5 text-[11px] rounded border-0 cursor-pointer text-white bg-[var(--fh-accent)] hover:bg-[var(--fh-accent-hover)] disabled:cursor-default disabled:opacity-60"
+              :disabled="downloadState === 'downloading'"
+              @click="handleDownload"
+            >
+              <span :class="BUTTON_ICON[downloadState]" class="text-[12px]" aria-hidden="true" />
+              <span class="truncate">{{ BUTTON_LABEL[downloadState] }}</span>
+            </button>
+            <button
+              data-testid="copy-button"
+              class="flex items-center gap-0.5 px-1 py-0.5 text-[11px] rounded cursor-pointer bg-transparent border border-solid border-[var(--fh-border)] text-[var(--fh-muted)] hover:border-[var(--fh-accent)] hover:text-[var(--fh-accent)]"
+              @click="expanded = !expanded"
+            >
+              <span class="i-lucide-copy text-[12px]" aria-hidden="true" />
+              {{ i18n.t('card.copy') }}
+              <span :class="expanded ? 'i-lucide-chevron-up' : 'i-lucide-chevron-down'" class="text-[10px]" aria-hidden="true" />
+            </button>
+          </div>
+        </div>
+        <div class="flex items-baseline gap-2 mt-0.5">
+          <div class="flex-1 min-w-0 truncate text-[11px] text-[var(--fh-muted)]">
+            {{ SOURCE_LABEL[candidate.source] }} · {{ formatLabel }}
           </div>
           <div
             v-if="byteLabel"
@@ -210,27 +264,6 @@ async function handleCopy(kind: CopyKind) {
             {{ byteLabel }}
           </div>
         </div>
-        <div class="truncate text-[11px] text-[var(--fh-muted)]">
-          {{ SOURCE_LABEL[candidate.source] }} · {{ formatLabel }}
-        </div>
-      </div>
-
-      <div class="flex-none flex flex-col gap-1 w-[72px]">
-        <button
-          data-testid="download-button"
-          class="truncate px-2 py-1 text-[12px] rounded border-0 cursor-pointer text-white bg-[var(--fh-accent)] hover:bg-[var(--fh-accent-hover)] disabled:cursor-default disabled:opacity-60"
-          :disabled="downloadState === 'downloading'"
-          @click="handleDownload"
-        >
-          {{ BUTTON_LABEL[downloadState] }}
-        </button>
-        <button
-          data-testid="copy-button"
-          class="truncate px-2 py-1 text-[12px] rounded cursor-pointer bg-transparent border border-solid border-[var(--fh-border)] text-[var(--fh-muted)] hover:border-[var(--fh-accent)] hover:text-[var(--fh-accent)]"
-          @click="expanded = !expanded"
-        >
-          {{ i18n.t('card.copy') }}{{ expanded ? '▴' : '▾' }}
-        </button>
       </div>
     </div>
 
@@ -252,10 +285,11 @@ async function handleCopy(kind: CopyKind) {
       <button
         data-testid="preview-bg-button"
         type="button"
-        class="absolute top-1 right-1 px-1.5 py-0.5 text-[11px] rounded cursor-pointer bg-[var(--fh-bg)] border border-solid border-[var(--fh-border)] text-[var(--fh-muted)] hover:border-[var(--fh-accent)] hover:text-[var(--fh-accent)]"
+        class="absolute top-1 right-1 flex items-center gap-0.5 px-1.5 py-0.5 text-[11px] rounded cursor-pointer bg-[var(--fh-bg)] border border-solid border-[var(--fh-border)] text-[var(--fh-muted)] hover:border-[var(--fh-accent)] hover:text-[var(--fh-accent)]"
         :title="i18n.t('card.previewBg')"
         @click="cyclePreviewBg"
       >
+        <span :class="PREVIEW_BG_ICON[previewBg]" class="text-[12px]" aria-hidden="true" />
         {{ PREVIEW_BG_LABEL[previewBg] }}
       </button>
     </div>
@@ -266,12 +300,13 @@ async function handleCopy(kind: CopyKind) {
         v-for="kind in COPY_KINDS"
         :key="kind"
         :data-testid="`copy-option-${kind}`"
-        class="flex-1 min-w-0 truncate px-1 py-1 text-[11px] rounded cursor-pointer bg-transparent border border-solid border-[var(--fh-border)] text-[var(--fh-muted)] hover:border-[var(--fh-accent)] hover:text-[var(--fh-accent)] disabled:cursor-default disabled:opacity-40 disabled:hover:border-[var(--fh-border)] disabled:hover:text-[var(--fh-muted)]"
+        class="flex-auto min-w-0 flex items-center justify-center gap-0.5 px-1 py-1 text-[11px] rounded cursor-pointer bg-transparent border border-solid border-[var(--fh-border)] text-[var(--fh-muted)] hover:border-[var(--fh-accent)] hover:text-[var(--fh-accent)] disabled:cursor-default disabled:opacity-40 disabled:hover:border-[var(--fh-border)] disabled:hover:text-[var(--fh-muted)]"
         :disabled="kind === 'image' && !canCopyImage"
         :title="kind === 'image' && !canCopyImage ? i18n.t('card.copyImageOnlyPng') : undefined"
         @click="handleCopy(kind)"
       >
-        {{ copyKindLabel(kind) }}
+        <span :class="copyKindIcon(kind)" class="text-[12px]" aria-hidden="true" />
+        <span class="truncate">{{ copyKindLabel(kind) }}</span>
       </button>
     </div>
   </li>
