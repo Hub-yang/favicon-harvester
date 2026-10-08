@@ -2,7 +2,7 @@
 
 本文档记录「图标提取器」提交 Chrome 网上应用店审核的完整操作流程，分三部分：**首次提交上架**、**后续版本迭代发布**、**审核被打回怎么办**。前置代码质量/安全/manifest 合规审查已完成（见 git log 中「上线前最后一次 code review」相关提交），本文档只覆盖店铺列表侧的操作。
 
-已确认的前提：已有 Chrome Web Store 开发者账号；仓库 `Hub-yang/favicon-harvester` 保持 **private**（不改可见性）；隐私政策改用公开 GitHub Gist 承载；商店列表只做中文（zh-CN）。
+已确认的前提：已有 Chrome Web Store 开发者账号；仓库 `Hub-yang/favicon-harvester` 保持 **private**（不改可见性）；隐私政策改用公开 GitHub Gist 承载；商店列表以中文（zh-CN）为默认语言，英文（en）listing 见 1.2 节末尾。
 
 ---
 
@@ -83,7 +83,34 @@ Chrome 商店「隐私声明」页要求填一个可公开访问的隐私政策 
 
 **分类（Category）**：建议选 "Productivity"（生产力工具）或 "Developer Tools"，二选一，凭你判断哪个更贴近实际使用场景。
 
-**语言**：仅添加中文（简体）。
+**语言**：中文（简体）为默认语言；英文 listing 见下方。
+
+#### 英文 listing（en）
+
+Store listing 页顶部的语言下拉框里，选项对应扩展包里的 `_locales/<locale>` 目录，所以要在带 `_locales/en` 的包（v0.3.0 起）上传后才能选 English。各字段的来源：
+
+- **名称**与**简短描述**：取自 manifest，英文版分别读 [`locales/en.yml`](./locales/en.yml) 的 `extName` / `extDescription`，后台不用另填。要改就改那两个字段，然后重新发版。
+- **详细描述**：后台切到 English 后粘贴下面这段。它和中文版逐段对应，同样受本节顶部三条原则约束。
+- **截图**：可以给英文单独上传一组，用英文界面截取。不传就沿用默认语言的截图。
+- **单一用途说明、权限用途说明、数据使用声明**：这几项在 Privacy practices 标签页，不分语言，沿用上面的中文版即可。
+
+**详细描述（English）**：
+
+```
+Favicon Harvester gets you the icon files that the website you are on is actually using.
+
+Open any page and click the extension's button in the toolbar. It looks at everything the site declares for its icons, including the icon tags in the page head, the site's Web App Manifest, and the usual file locations at the root of the domain.
+
+Duplicates are removed and the results are listed from largest to smallest, each labeled with its dimensions and format, and usually its file size too. Click a thumbnail to see it enlarged, then switch the background to light or dark to check whether the transparent edges are clean.
+
+Save the ones you need one at a time, or bundle them all into a single ZIP that comes with a list noting where on the site each file was found. Downloads go into a folder named after the website, so your downloads folder stays tidy. You can also copy any single result straight away, as its address, as the image itself, as a Data URI, or as a ready-to-paste link tag. What you get is the original file from the website, never converted or compressed.
+
+The interface follows your browser's language and is available in English and Simplified Chinese, with nothing to set up.
+
+The extension runs only when you click it, reads only the current tab, and only requests addresses on the site's own domain. It uses no third-party icon service and does not collect or upload any of your data.
+
+Useful for designers looking at how other sites handle their icons, and for developers who need every size a site provides.
+```
 
 ### 1.3 图形素材
 
@@ -218,7 +245,7 @@ Chrome 审核团队打回后会在开发者控制台和邮件里给出理由。�
    这同时是 **Established Publisher（知名发布商）徽章**的前置条件——该徽章要求「身份已验证 + 与 Google 服务保持一贯良好记录」，同样需要几个月。
 3. 继续维持权限最小化、不引入任何动态加载远程脚本的依赖（当前已满足，见第三部分表格最后两行）。
 4. 在 README 与商店描述里主动说明这个提示的含义，降低用户疑虑，比什么都不说更能保住信任。
-5. Featured（精选）徽章需要提名且要求条目支持英文，当前商店条目只有中文，暂不满足；若以后想申请，需先补英文 listing。
+5. Featured（精选）徽章需要提名，且要求条目支持英文。英文 listing 文案见 1.2 节末尾，在商店后台提交生效后才满足这一条。
 
 ### 顺带说明：`Service Worker（无效）`
 
