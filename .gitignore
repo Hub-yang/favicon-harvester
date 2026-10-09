@@ -25,6 +25,10 @@ CLAUDE.md
 # （产物 .output/layout-harness.html 已被上面的 .output 覆盖）
 scripts/gen-layout-harness.py
 
+# 发版前端到端测试（自带 puppeteer 依赖与独立 pnpm 工作区），仅本地使用，不随开源仓库分发
+# （运行产物 .output/e2e/ 已被上面的 .output 覆盖）
+scripts/e2e/
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
