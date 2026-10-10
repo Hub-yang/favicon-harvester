@@ -53,7 +53,7 @@ pnpm build      # 产物在 .output/chrome-mv3
 
 ## 🖱 用法
 
-打开任意网页 → 点工具栏上的插件图标。面板里每个图标都带尺寸、格式和文件体积，点缩略图可以放大看，并在棋盘格 / 白底 / 黑底之间切换背景，专门用来检查透明边缘干不干净。
+打开任意网页 → 点工具栏上的插件图标。面板里每个图标都带尺寸、格式和文件体积，点缩略图可以放大看，并在棋盘格 / 白底 / 黑底之间切换背景，专门用来检查透明边缘干不干净。多帧的 ICO 会在卡片上列出它包含的全部尺寸，比如 `16 / 32 / 48`。
 
 图标可以单个下载，也可以一键打包成一个 ZIP 拿走（包内附一份 `icons.json`，记录每个图标的来源、尺寸与格式）；单个图标还能复制成链接、图片、Data URI 或现成的 `<link>` 标签。
 
@@ -63,7 +63,7 @@ pnpm build      # 产物在 .output/chrome-mv3
 
 | 来源 | 拿什么 |
 | --- | --- |
-| `link` | 往页面注入一段只读脚本，读 `<head>` 里所有 `<link rel="icon">`、`apple-touch-icon` 等标签的 `href` 与 `sizes` |
+| `link` | 往页面注入一段只读脚本，读 `<head>` 里所有 `<link rel="icon">`、`apple-touch-icon` 等标签的 `href` 与 `sizes`；`rel` 写成多个值（如 `alternate icon`）也能识别 |
 | `manifest` | 顺着 `<link rel="manifest">` 拉取 Web App Manifest，解析里面的 `icons[]` |
 | `well-known` | 直接试 `/favicon.ico`、`/apple-touch-icon.png` 这几个约定路径 |
 | `tab` | 浏览器已经拿到的 `tab.favIconUrl`，前三路都空手而归时的兜底 |

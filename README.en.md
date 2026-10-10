@@ -53,7 +53,7 @@ Then load `.output/chrome-mv3` via steps 2 and 3 above. For development, `pnpm d
 
 ## 🖱 Usage
 
-Open any page → click the toolbar icon. Every icon in the panel shows its size, format and file weight; click a thumbnail to enlarge it and toggle the backdrop between checkerboard, light and dark to inspect transparent edges.
+Open any page → click the toolbar icon. Every icon in the panel shows its size, format and file weight; click a thumbnail to enlarge it and toggle the backdrop between checkerboard, light and dark to inspect transparent edges. A multi-frame ICO lists every size it contains on its card, for example `16 / 32 / 48`.
 
 Download icons one at a time, or grab them all as a single ZIP (with an `icons.json` inside recording each icon's source, size and format). Individual icons can also be copied as a link, an image, a Data URI, or a ready-made `<link>` tag.
 
@@ -63,7 +63,7 @@ Clicking the icon kicks off four collectors at once:
 
 | Source | What it reads |
 | --- | --- |
-| `link` | Injects a read-only script into the page and collects `href` and `sizes` from every `<link rel="icon">`, `apple-touch-icon`, and friends |
+| `link` | Injects a read-only script into the page and collects `href` and `sizes` from every `<link rel="icon">`, `apple-touch-icon`, and friends; a multi-value `rel` such as `alternate icon` is recognized too |
 | `manifest` | Follows `<link rel="manifest">`, fetches the Web App Manifest, parses its `icons[]` |
 | `well-known` | Tries the conventional paths directly: `/favicon.ico`, `/apple-touch-icon.png` |
 | `tab` | Falls back to `tab.favIconUrl` when the first three come up empty |
