@@ -29,7 +29,6 @@ toolbar:
 card:
   sourceTab: Browser fallback
   unknownSize: Size unknown
-  sizeMismatch: Declared $1, actual $2
   download: Save
   downloading: Saving…
   downloaded: Saved

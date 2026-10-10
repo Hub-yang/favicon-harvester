@@ -27,7 +27,6 @@ describe('fetchManifestCandidates', () => {
         sourceDetail: 'any',
         width: 192,
         height: 192,
-        declaredSizes: [{ width: 192, height: 192 }],
       },
       {
         url: 'https://example.com/icons/icon-512.png',
@@ -35,25 +34,8 @@ describe('fetchManifestCandidates', () => {
         sourceDetail: undefined,
         width: 512,
         height: 512,
-        declaredSizes: [{ width: 512, height: 512 }, { width: 256, height: 256 }],
       },
     ])
-  })
-
-  it('sizes 缺失、为 any 或不是字符串时不带 declaredSizes 字段', async () => {
-    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(jsonResponse({
-      icons: [
-        { src: 'a.png' },
-        { src: 'b.svg', sizes: 'any' },
-        { src: 'c.png', sizes: 192 },
-      ],
-    })))
-
-    const candidates = await fetchManifestCandidates('https://example.com/site.webmanifest')
-
-    expect(candidates).toHaveLength(3)
-    for (const candidate of candidates)
-      expect(candidate).not.toHaveProperty('declaredSizes')
   })
 
   it('非法 JSON 时返回空数组，不抛异常', async () => {

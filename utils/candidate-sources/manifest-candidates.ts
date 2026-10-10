@@ -33,14 +33,13 @@ export async function fetchManifestCandidates(manifestHref: string): Promise<Ico
       if (!isWebManifestIcon(icon) || typeof icon.src !== 'string' || !icon.src)
         continue
 
-      const declared = typeof icon.sizes === 'string' ? parseSizesAttribute(icon.sizes) : []
+      const size = typeof icon.sizes === 'string' ? parseSizesAttribute(icon.sizes) : undefined
       candidates.push({
         url: new URL(icon.src, manifestHref).toString(),
         source: 'manifest',
         sourceDetail: typeof icon.purpose === 'string' ? icon.purpose : undefined,
-        width: declared[0]?.width,
-        height: declared[0]?.height,
-        ...(declared.length > 0 && { declaredSizes: declared }),
+        width: size?.width,
+        height: size?.height,
       })
     }
 

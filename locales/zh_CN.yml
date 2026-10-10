@@ -30,7 +30,6 @@ toolbar:
 card:
   sourceTab: 浏览器兜底
   unknownSize: 尺寸未知
-  sizeMismatch: 声明 $1，实际 $2
   download: 下载
   downloading: 下载中…
   downloaded: 已下载
