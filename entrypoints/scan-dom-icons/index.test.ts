@@ -44,6 +44,42 @@ describe('scanDomIcons', () => {
     expect(result.icons).toHaveLength(0)
   })
 
+  it('rel 是多值时，任一值是图标类型就命中（如 alternate icon）', () => {
+    document.head.innerHTML = `
+      <link rel="alternate icon" href="/favicon.png">
+      <link rel="icon shortcut" href="/a.ico">
+      <link rel="preload apple-touch-icon" href="/b.png">
+    `
+
+    const result = scanDomIcons(document)
+
+    expect(result.icons.map(icon => icon.rel)).toEqual(['alternate icon', 'icon shortcut', 'preload apple-touch-icon'])
+  })
+
+  it('rel 里的多余空白、制表符、换行被规整成单个空格', () => {
+    document.head.innerHTML = `<link rel="  Alternate\t\n  ICON  " href="/favicon.png">`
+
+    const result = scanDomIcons(document)
+
+    expect(result.icons).toHaveLength(1)
+    expect(result.icons[0]?.rel).toBe('alternate icon')
+  })
+
+  it('不误收只是名字里带 icon 的其他 rel（如 apple-touch-startup-image、fluid-icon）', () => {
+    document.head.innerHTML = `
+      <link rel="apple-touch-startup-image" href="/splash.png">
+      <link rel="fluid-icon" href="/fluidicon.png">
+    `
+
+    expect(scanDomIcons(document).icons).toHaveLength(0)
+  })
+
+  it('rel 多值里含 manifest 时识别为 manifestHref', () => {
+    document.head.innerHTML = `<link rel="preload manifest" href="/site.webmanifest">`
+
+    expect(scanDomIcons(document).manifestHref).toMatch(/\/site\.webmanifest$/)
+  })
+
   it('识别 manifest link 为 manifestHref', () => {
     document.head.innerHTML = `<link rel="manifest" href="/site.webmanifest">`
 

@@ -5,9 +5,10 @@ import type { DomScanResult } from '@/utils/types'
  * 不能依赖 background 闭包变量/运行时状态；只读当前页面 DOM，不做任何网络请求。
  */
 
-const ICON_RELS = new Set([
+// rel 是空格分隔的多值属性：`alternate icon`、`shortcut icon` 都靠其中的 `icon` 命中，
+// 所以按单个值比对，`shortcut icon` 不再单列
+const ICON_REL_TOKENS = new Set([
   'icon',
-  'shortcut icon',
   'apple-touch-icon',
   'apple-touch-icon-precomposed',
   'mask-icon',
@@ -18,21 +19,21 @@ export function scanDomIcons(doc: Document): DomScanResult {
   let manifestHref: string | undefined
 
   doc.querySelectorAll<HTMLLinkElement>('link[rel]').forEach((link) => {
-    const rel = link.rel.trim().toLowerCase()
+    const tokens = link.rel.toLowerCase().split(/\s+/).filter(Boolean)
 
-    if (ICON_RELS.has(rel)) {
+    if (tokens.some(token => ICON_REL_TOKENS.has(token))) {
       const href = link.href
       if (!href)
         return
       icons.push({
         href,
-        rel,
+        rel: tokens.join(' '),
         sizes: link.getAttribute('sizes') ?? undefined,
       })
       return
     }
 
-    if (rel === 'manifest' && manifestHref === undefined) {
+    if (tokens.includes('manifest') && manifestHref === undefined) {
       manifestHref = link.href || undefined
     }
   })
