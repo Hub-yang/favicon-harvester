@@ -102,6 +102,15 @@ describe('probeCandidate', () => {
     })
   })
 
+  it('实测尺寸覆盖 width/height，但 declaredSizes 原样保留，供声明与实测比对', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(bytesResponse(PNG_BYTES, 'image/png')))
+    vi.stubGlobal('createImageBitmap', vi.fn().mockResolvedValue({ width: 32, height: 32, close: vi.fn() }))
+
+    const result = await probeCandidate(linkCandidate({ width: 180, height: 180, declaredSizes: [{ width: 180, height: 180 }] }))
+
+    expect(result).toMatchObject({ width: 32, height: 32, declaredSizes: [{ width: 180, height: 180 }] })
+  })
+
   it('fetch 抛错（含超时 abort）时返回 undefined', async () => {
     vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new DOMException('aborted', 'AbortError')))
 

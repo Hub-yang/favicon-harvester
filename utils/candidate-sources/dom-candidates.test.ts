@@ -17,8 +17,23 @@ describe('buildDomCandidates', () => {
         sourceDetail: 'icon',
         width: 32,
         height: 32,
+        declaredSizes: [{ width: 32, height: 32 }],
       },
     ])
+  })
+
+  it('多值 sizes：width/height 取第一个，declaredSizes 全部保留', () => {
+    const scan: DomScanResult = {
+      icons: [
+        { href: 'https://example.com/favicon.ico', rel: 'icon', sizes: '16x16 32x32 48x48' },
+      ],
+    }
+
+    expect(buildDomCandidates(scan)[0]).toMatchObject({
+      width: 16,
+      height: 16,
+      declaredSizes: [{ width: 16, height: 16 }, { width: 32, height: 32 }, { width: 48, height: 48 }],
+    })
   })
 
   it('无 sizes 时 width/height 为 undefined', () => {
@@ -37,6 +52,18 @@ describe('buildDomCandidates', () => {
         height: undefined,
       },
     ])
+  })
+
+  it('无 sizes 或 sizes="any" 时不带 declaredSizes 字段（没有声明就无从比对）', () => {
+    const scan: DomScanResult = {
+      icons: [
+        { href: 'https://example.com/a.svg', rel: 'icon' },
+        { href: 'https://example.com/b.svg', rel: 'icon', sizes: 'any' },
+      ],
+    }
+
+    for (const candidate of buildDomCandidates(scan))
+      expect(candidate).not.toHaveProperty('declaredSizes')
   })
 
   it('保留原始顺序转换多个候选', () => {

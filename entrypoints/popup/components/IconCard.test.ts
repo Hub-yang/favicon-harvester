@@ -495,6 +495,59 @@ describe('iconCard', () => {
     })
   })
 
+  describe('尺寸不一致警示', () => {
+    const mismatched: IconCandidate = {
+      url: 'https://example.com/apple-touch-icon.png',
+      source: 'link',
+      mimeType: 'image/png',
+      width: 32,
+      height: 32,
+      declaredSizes: [{ width: 180, height: 180 }],
+    }
+
+    function warning(wrapper: ReturnType<typeof mountCard>) {
+      return wrapper.find('[data-testid="size-mismatch"]')
+    }
+
+    it('实测与声明不一致时显示警示行，写明声明值与实测值', () => {
+      const row = warning(mountCard(mismatched))
+
+      expect(row.exists()).toBe(true)
+      expect(row.text()).toBe('声明 180×180，实际 32×32')
+    })
+
+    it('多个声明值用 / 连接', () => {
+      const row = warning(mountCard({ ...mismatched, width: 64, height: 64, declaredSizes: [{ width: 16, height: 16 }, { width: 32, height: 32 }] }))
+
+      expect(row.text()).toBe('声明 16×16 / 32×32，实际 64×64')
+    })
+
+    it('完整文字放进 title，截断时悬停可见', () => {
+      expect(warning(mountCard(mismatched)).attributes('title')).toBe('声明 180×180，实际 32×32')
+    })
+
+    it('带警示图标且对读屏隐藏', () => {
+      const row = warning(mountCard(mismatched))
+
+      expect(lucideIcons(row)).toEqual(['i-lucide-triangle-alert'])
+      expect(iconEl(row).attributes('aria-hidden')).toBe('true')
+    })
+
+    it('一致、无声明、SVG 时都不渲染警示行', () => {
+      expect(warning(mountCard({ ...mismatched, width: 180, height: 180 })).exists()).toBe(false)
+      expect(warning(mountCard({ ...mismatched, declaredSizes: undefined })).exists()).toBe(false)
+      expect(warning(mountCard({ ...mismatched, mimeType: 'image/svg+xml' })).exists()).toBe(false)
+    })
+
+    it('作为信息列的第三行，排在「来源 · 格式」那一行之后', () => {
+      const wrapper = mountCard({ ...mismatched, byteLength: 4300 })
+      const infoRow2 = wrapper.get('[data-testid="icon-size-bytes"]').element.parentElement!
+      const row = warning(wrapper).element
+
+      expect(infoRow2.nextElementSibling).toBe(row)
+    })
+  })
+
   describe('按钮布局', () => {
     it('下载与复制按钮并排在第一行尺寸右侧，下载在前、复制在后', () => {
       const wrapper = mountCard({ url: 'https://example.com/a.png', source: 'link', width: 24, height: 24 })

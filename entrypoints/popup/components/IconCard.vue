@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import type { IconCandidate } from '@/utils/types'
+import type { IconCandidate, Size } from '@/utils/types'
 import { useTimeoutFn } from '@vueuse/core'
 import { computed, ref } from 'vue'
 import { i18n } from '#i18n'
@@ -8,6 +8,7 @@ import { formatBytes } from '@/utils/format-bytes'
 import { buildFilename, resolveIconExtension } from '@/utils/icon-naming'
 import { buildLinkTag } from '@/utils/link-tag'
 import { sendMessage } from '@/utils/messaging'
+import { findSizeMismatch } from '@/utils/size-mismatch'
 
 const props = defineProps<{ candidate: IconCandidate, domain: string }>()
 const emit = defineEmits<{ loadError: [url: string] }>()
@@ -120,6 +121,15 @@ const sizeLabel = computed(() => {
 
 // 格式标签：与下载文件名的扩展名同源，保证显示格式与实际下载扩展名一致
 const formatLabel = computed(() => resolveIconExtension(props.candidate).toUpperCase())
+
+const sizeMismatchLabel = computed(() => {
+  const mismatch = findSizeMismatch(props.candidate)
+  if (!mismatch)
+    return undefined
+
+  const format = ({ width, height }: Size) => `${width}×${height}`
+  return i18n.t('card.sizeMismatch', [mismatch.declared.map(format).join(' / '), format(mismatch.actual)])
+})
 
 // 探测阶段没取到字节数时（理论上不会，但类型上是可选的）整块不渲染，不留空占位
 const byteLabel = computed(() => {
@@ -263,6 +273,15 @@ async function handleCopy(kind: CopyKind) {
           >
             {{ byteLabel }}
           </div>
+        </div>
+        <div
+          v-if="sizeMismatchLabel"
+          data-testid="size-mismatch"
+          class="flex items-center gap-1 mt-0.5 text-[11px] text-[var(--fh-warn-text)]"
+          :title="sizeMismatchLabel"
+        >
+          <span class="i-lucide-triangle-alert text-[12px]" aria-hidden="true" />
+          <span class="truncate">{{ sizeMismatchLabel }}</span>
         </div>
       </div>
     </div>

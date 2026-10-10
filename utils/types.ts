@@ -14,8 +14,11 @@ export interface IconCandidate {
   source: IconSourceCategory
   /** 例如 DOM 的 rel 值、well-known 的文件名、manifest icon 的 purpose */
   sourceDetail?: string
+  /** 探测后为实测尺寸；实测失败时退回第一个声明尺寸 */
   width?: number
   height?: number
+  /** 页面 <link sizes> / manifest sizes 声明的全部尺寸，探测时不覆盖，供与实测比对；没有声明时不带此字段 */
+  declaredSizes?: Size[]
   /** probeCandidate 探测后回填，供命名规则推导扩展名 */
   mimeType?: string
   /** probeCandidate 探测时顺手回填的文件字节数，供卡片展示体积 */
