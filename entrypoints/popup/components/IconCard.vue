@@ -267,10 +267,10 @@ async function handleCopy(kind: CopyKind) {
           </div>
         </div>
         <div class="flex items-baseline gap-2 mt-0.5">
+          <!-- 不截断：常见的 4~7 帧 ICO 一行放不下，截掉就又把尺寸藏回去了，宁可换行 -->
           <div
             data-testid="icon-source-format"
-            class="flex-1 min-w-0 truncate text-[11px] text-[var(--fh-muted)]"
-            :title="frameLabel ? sourceFormatLabel : undefined"
+            class="flex-1 min-w-0 text-[11px] text-[var(--fh-muted)]"
           >
             {{ sourceFormatLabel }}
           </div>

@@ -520,15 +520,16 @@ describe('iconCard', () => {
       expect(sourceFormat(wrapper).text()).toBe('DOM link · ICO · 16×12 / 32×32')
     })
 
-    it('有帧尺寸时 title 给出整栏全文，截断后悬停可见', () => {
-      expect(sourceFormat(mountCard(ico)).attributes('title')).toBe('DOM link · ICO · 16 / 32 / 48')
+    it('帧尺寸不截断：常见的 4~7 帧 ICO 一行放不下时换行，不藏进悬停提示', () => {
+      const row = sourceFormat(mountCard(ico))
+
+      // 真实宽度由 E2E 的 7 帧夹具量；这里钉住「不截断、不靠 title」这一选择
+      expect(row.classes()).not.toContain('truncate')
+      expect(row.attributes('title')).toBeUndefined()
     })
 
-    it('没有帧尺寸时第二行不变，也不带 title', () => {
-      const row = sourceFormat(mountCard({ ...ico, frameSizes: undefined }))
-
-      expect(row.text()).toBe('DOM link · ICO')
-      expect(row.attributes('title')).toBeUndefined()
+    it('没有帧尺寸时第二行不变', () => {
+      expect(sourceFormat(mountCard({ ...ico, frameSizes: undefined })).text()).toBe('DOM link · ICO')
     })
 
     it('第一行尺寸仍是实测值，不受帧列表影响', () => {

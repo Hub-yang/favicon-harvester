@@ -167,6 +167,15 @@ describe('probeCandidate', () => {
       expect(result?.frameSizes).toHaveLength(2)
     })
 
+    it('响应头是 image/ico 这类非标准写法、URL 是 .ico 时同样回填（与格式标签同源判定）', async () => {
+      vi.stubGlobal('fetch', vi.fn().mockResolvedValue(bytesResponse(icoBytes([[16, 16], [32, 32]]), 'image/ico')))
+      stubBitmap(32)
+
+      const result = await probeCandidate(linkCandidate({ url: 'https://example.com/favicon.ico' }))
+
+      expect(result?.frameSizes).toHaveLength(2)
+    })
+
     it('只有一种尺寸的 ICO 不带 frameSizes', async () => {
       vi.stubGlobal('fetch', vi.fn().mockResolvedValue(bytesResponse(icoBytes([[32, 32], [32, 32]]), 'image/x-icon')))
       stubBitmap(32)
