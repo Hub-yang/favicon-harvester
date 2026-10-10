@@ -121,6 +121,20 @@ const sizeLabel = computed(() => {
 // 格式标签：与下载文件名的扩展名同源，保证显示格式与实际下载扩展名一致
 const formatLabel = computed(() => resolveIconExtension(props.candidate).toUpperCase())
 
+// 多帧 ICO 只写一个尺寸会让人以为里面就这一种；全是正方形时只写边长，读起来短
+const frameLabel = computed(() => {
+  const frames = props.candidate.frameSizes
+  if (!frames)
+    return undefined
+
+  const allSquare = frames.every(({ width, height }) => width === height)
+  return frames.map(({ width, height }) => allSquare ? `${width}` : `${width}×${height}`).join(' / ')
+})
+
+const sourceFormatLabel = computed(() =>
+  [SOURCE_LABEL[props.candidate.source], formatLabel.value, frameLabel.value].filter(Boolean).join(' · '),
+)
+
 // 探测阶段没取到字节数时（理论上不会，但类型上是可选的）整块不渲染，不留空占位
 const byteLabel = computed(() => {
   const { byteLength } = props.candidate
@@ -253,8 +267,12 @@ async function handleCopy(kind: CopyKind) {
           </div>
         </div>
         <div class="flex items-baseline gap-2 mt-0.5">
-          <div class="flex-1 min-w-0 truncate text-[11px] text-[var(--fh-muted)]">
-            {{ SOURCE_LABEL[candidate.source] }} · {{ formatLabel }}
+          <div
+            data-testid="icon-source-format"
+            class="flex-1 min-w-0 truncate text-[11px] text-[var(--fh-muted)]"
+            :title="frameLabel ? sourceFormatLabel : undefined"
+          >
+            {{ sourceFormatLabel }}
           </div>
           <div
             v-if="byteLabel"

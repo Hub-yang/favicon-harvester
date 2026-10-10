@@ -20,6 +20,8 @@ export interface IconCandidate {
   mimeType?: string
   /** probeCandidate 探测时顺手回填的文件字节数，供卡片展示体积 */
   byteLength?: number
+  /** 多帧 ICO 包含的全部帧尺寸（≥ 2 种时才有），按面积升序；width/height 仍是实测值 */
+  frameSizes?: Size[]
 }
 
 /** background 扫描流程的最终返回结果 */

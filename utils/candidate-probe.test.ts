@@ -117,4 +117,81 @@ describe('probeCandidate', () => {
 
     expect(result?.byteLength).toBe(12)
   })
+
+  describe('多帧 ICO 回填 frameSizes', () => {
+    /** 文件头 + 目录，与 ico-frames.test.ts 的构造方式一致 */
+    function icoBytes(frames: [number, number][]): Uint8Array {
+      const bytes = new Uint8Array(6 + 16 * frames.length)
+      const view = new DataView(bytes.buffer)
+      view.setUint16(2, 1, true)
+      view.setUint16(4, frames.length, true)
+      frames.forEach(([width, height], index) => {
+        bytes[6 + 16 * index] = width
+        bytes[6 + 16 * index + 1] = height
+      })
+      return bytes
+    }
+
+    function stubBitmap(size: number) {
+      vi.stubGlobal('createImageBitmap', vi.fn().mockResolvedValue({ width: size, height: size, close: vi.fn() }))
+    }
+
+    it('含 2 种及以上尺寸的 ICO 回填，实测 width/height 不受影响', async () => {
+      vi.stubGlobal('fetch', vi.fn().mockResolvedValue(bytesResponse(icoBytes([[16, 16], [32, 32], [48, 48]]), 'image/x-icon')))
+      stubBitmap(48)
+
+      const result = await probeCandidate(linkCandidate({ url: 'https://example.com/favicon.ico' }))
+
+      expect(result).toMatchObject({
+        width: 48,
+        height: 48,
+        frameSizes: [{ width: 16, height: 16 }, { width: 32, height: 32 }, { width: 48, height: 48 }],
+      })
+    })
+
+    it('image/vnd.microsoft.icon 同样回填', async () => {
+      vi.stubGlobal('fetch', vi.fn().mockResolvedValue(bytesResponse(icoBytes([[16, 16], [32, 32]]), 'image/vnd.microsoft.icon')))
+      stubBitmap(32)
+
+      const result = await probeCandidate(linkCandidate({ url: 'https://example.com/favicon.ico' }))
+
+      expect(result?.frameSizes).toHaveLength(2)
+    })
+
+    it('响应头缺失、靠字节嗅探认出 ICO 时同样回填', async () => {
+      vi.stubGlobal('fetch', vi.fn().mockResolvedValue(bytesResponse(icoBytes([[16, 16], [32, 32]]), 'application/octet-stream')))
+      stubBitmap(32)
+
+      const result = await probeCandidate(linkCandidate({ url: 'https://example.com/favicon.ico' }))
+
+      expect(result?.frameSizes).toHaveLength(2)
+    })
+
+    it('只有一种尺寸的 ICO 不带 frameSizes', async () => {
+      vi.stubGlobal('fetch', vi.fn().mockResolvedValue(bytesResponse(icoBytes([[32, 32], [32, 32]]), 'image/x-icon')))
+      stubBitmap(32)
+
+      const result = await probeCandidate(linkCandidate({ url: 'https://example.com/favicon.ico' }))
+
+      expect(result).not.toHaveProperty('frameSizes')
+    })
+
+    it('响应头说是 PNG 时不读帧，即使字节是 ICO（格式标签写 PNG，就不能再冒出 ICO 帧尺寸）', async () => {
+      vi.stubGlobal('fetch', vi.fn().mockResolvedValue(bytesResponse(icoBytes([[16, 16], [32, 32]]), 'image/png')))
+      stubBitmap(32)
+
+      const result = await probeCandidate(linkCandidate())
+
+      expect(result).not.toHaveProperty('frameSizes')
+    })
+
+    it('非 ICO（如 PNG）不带 frameSizes', async () => {
+      vi.stubGlobal('fetch', vi.fn().mockResolvedValue(bytesResponse(PNG_BYTES, 'image/png')))
+      stubBitmap(16)
+
+      const result = await probeCandidate(linkCandidate())
+
+      expect(result).not.toHaveProperty('frameSizes')
+    })
+  })
 })

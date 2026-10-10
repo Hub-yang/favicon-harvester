@@ -495,6 +495,47 @@ describe('iconCard', () => {
     })
   })
 
+  describe('多帧 ICO 尺寸', () => {
+    const ico: IconCandidate = {
+      url: 'https://example.com/favicon.ico',
+      source: 'link',
+      mimeType: 'image/x-icon',
+      width: 48,
+      height: 48,
+      byteLength: 1200,
+      frameSizes: [{ width: 16, height: 16 }, { width: 32, height: 32 }, { width: 48, height: 48 }],
+    }
+
+    function sourceFormat(wrapper: ReturnType<typeof mountCard>) {
+      return wrapper.get('[data-testid="icon-source-format"]')
+    }
+
+    it('第二行在来源 · 格式之后列出全部帧尺寸，全是正方形时只写边长', () => {
+      expect(sourceFormat(mountCard(ico)).text()).toBe('DOM link · ICO · 16 / 32 / 48')
+    })
+
+    it('有非正方形帧时每项写宽×高', () => {
+      const wrapper = mountCard({ ...ico, frameSizes: [{ width: 16, height: 12 }, { width: 32, height: 32 }] })
+
+      expect(sourceFormat(wrapper).text()).toBe('DOM link · ICO · 16×12 / 32×32')
+    })
+
+    it('有帧尺寸时 title 给出整栏全文，截断后悬停可见', () => {
+      expect(sourceFormat(mountCard(ico)).attributes('title')).toBe('DOM link · ICO · 16 / 32 / 48')
+    })
+
+    it('没有帧尺寸时第二行不变，也不带 title', () => {
+      const row = sourceFormat(mountCard({ ...ico, frameSizes: undefined }))
+
+      expect(row.text()).toBe('DOM link · ICO')
+      expect(row.attributes('title')).toBeUndefined()
+    })
+
+    it('第一行尺寸仍是实测值，不受帧列表影响', () => {
+      expect(mountCard(ico).get('[data-testid="icon-size-label"]').text()).toBe('48×48')
+    })
+  })
+
   describe('按钮布局', () => {
     it('下载与复制按钮并排在第一行尺寸右侧，下载在前、复制在后', () => {
       const wrapper = mountCard({ url: 'https://example.com/a.png', source: 'link', width: 24, height: 24 })
