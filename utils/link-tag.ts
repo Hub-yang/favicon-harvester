@@ -28,8 +28,11 @@ export function buildLinkTag(candidate: IconCandidate): string {
   if (candidate.mimeType)
     attributes.push(`type="${escapeAttribute(candidate.mimeType)}"`)
 
-  if (candidate.width !== undefined && candidate.height !== undefined)
-    attributes.push(`sizes="${candidate.width}x${candidate.height}"`)
+  // 多帧 ICO 的实测值只是最大帧，sizes 本就允许空格分隔多个尺寸，写全才不会把小帧藏掉
+  const sizes = candidate.frameSizes
+    ?? (candidate.width !== undefined && candidate.height !== undefined ? [{ width: candidate.width, height: candidate.height }] : [])
+  if (sizes.length > 0)
+    attributes.push(`sizes="${sizes.map(({ width, height }) => `${width}x${height}`).join(' ')}"`)
 
   attributes.push(`href="${escapeAttribute(candidate.url)}"`)
 

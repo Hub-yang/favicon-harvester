@@ -43,6 +43,34 @@ describe('buildLinkTag', () => {
     expect(buildLinkTag(candidate)).toBe('<link rel="icon" sizes="16x16" href="https://example.com/f.ico">')
   })
 
+  it('多帧 ICO 的 sizes 写全每一帧，而不是只写实测的最大帧', () => {
+    const candidate: IconCandidate = {
+      url: 'https://example.com/favicon.ico',
+      source: 'well-known',
+      sourceDetail: 'favicon.ico',
+      width: 48,
+      height: 48,
+      mimeType: 'image/x-icon',
+      frameSizes: [{ width: 16, height: 16 }, { width: 32, height: 32 }, { width: 48, height: 48 }],
+    }
+
+    expect(buildLinkTag(candidate)).toBe(
+      '<link rel="icon" type="image/x-icon" sizes="16x16 32x32 48x48" href="https://example.com/favicon.ico">',
+    )
+  })
+
+  it('多帧 ICO 含非正方形帧时，每项都写宽x高', () => {
+    const candidate: IconCandidate = {
+      url: 'https://example.com/favicon.ico',
+      source: 'tab',
+      width: 32,
+      height: 32,
+      frameSizes: [{ width: 16, height: 24 }, { width: 32, height: 32 }],
+    }
+
+    expect(buildLinkTag(candidate)).toContain('sizes="16x24 32x32"')
+  })
+
   it('缺尺寸时不输出 sizes 属性', () => {
     const candidate: IconCandidate = { url: 'https://example.com/a.svg', source: 'link', sourceDetail: 'icon', mimeType: 'image/svg+xml' }
 
