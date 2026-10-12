@@ -5,7 +5,7 @@ const ENTRY_BYTES = 16
 /** ICO 文件头的类型字段：1 为图标，2 为光标（.cur） */
 const ICON_TYPE = 1
 /** 目录项宽高只占一个字节，写 0 表示 256 */
-const ZERO_MEANS = 256
+const SIZE_ENCODED_AS_ZERO = 256
 
 /**
  * 只读 ICO 目录，列出文件里每一帧的尺寸。
@@ -27,8 +27,8 @@ export function parseIcoFrameSizes(bytes: Uint8Array): Size[] | undefined {
   const sizes = new Map<string, Size>()
   for (let index = 0; index < count; index++) {
     const offset = HEADER_BYTES + ENTRY_BYTES * index
-    const width = view.getUint8(offset) || ZERO_MEANS
-    const height = view.getUint8(offset + 1) || ZERO_MEANS
+    const width = view.getUint8(offset) || SIZE_ENCODED_AS_ZERO
+    const height = view.getUint8(offset + 1) || SIZE_ENCODED_AS_ZERO
     sizes.set(`${width}x${height}`, { width, height })
   }
 

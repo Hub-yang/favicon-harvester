@@ -19,7 +19,8 @@ export function scanDomIcons(doc: Document): DomScanResult {
   let manifestHref: string | undefined
 
   doc.querySelectorAll<HTMLLinkElement>('link[rel]').forEach((link) => {
-    const tokens = link.rel.toLowerCase().split(/\s+/).filter(Boolean)
+    // relList 按 HTML 规则拆分，但保留原大小写，而 link type 不区分大小写
+    const tokens = [...link.relList].map(token => token.toLowerCase())
 
     if (tokens.some(token => ICON_REL_TOKENS.has(token))) {
       const href = link.href

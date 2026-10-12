@@ -65,6 +65,14 @@ describe('scanDomIcons', () => {
     expect(result.icons[0]?.rel).toBe('alternate icon')
   })
 
+  it('只按 HTML 的 ASCII 空白拆分，不换行空格连着的 rel 不算图标（与浏览器一致）', () => {
+    document.head.innerHTML = `<link rel="alternate\u00A0icon" href="/favicon.png">`
+
+    const result = scanDomIcons(document)
+
+    expect(result.icons).toHaveLength(0)
+  })
+
   it('不误收只是名字里带 icon 的其他 rel（如 apple-touch-startup-image、fluid-icon）', () => {
     document.head.innerHTML = `
       <link rel="apple-touch-startup-image" href="/splash.png">
