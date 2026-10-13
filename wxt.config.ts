@@ -9,6 +9,12 @@ export default defineConfig({
     name: '__MSG_extName__',
     description: '__MSG_extDescription__',
     permissions: ['activeTab', 'scripting', 'downloads'],
+    // _execute_action 不派发 commands.onCommand，按键直接打开面板，background 不用写代码
+    commands: {
+      _execute_action: {
+        suggested_key: { default: 'Alt+Shift+F' },
+      },
+    },
   },
   autoIcons: {
     baseIconPath: 'assets/icon.svg',
