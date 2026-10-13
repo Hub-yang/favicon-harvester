@@ -31,7 +31,7 @@ This extension collapses all of that into one click.
 - **Downloads are byte-for-byte.** No transcoding, no resizing, no compression. Filenames follow `domain-source-size.ext` and land under `favicon-harvester/<domain>/` in your downloads folder instead of cluttering its root, and one click can grab everything at once.
 - **Four ways to copy.** Expand the Copy button on a card to grab the link, the image itself, a Data URI, or a ready-made `<link rel="icon">` tag you can paste straight into `<head>`. Copying the image is PNG-only — anything else would have to be transcoded to enter the system clipboard, which contradicts the whole byte-for-byte promise, so it is greyed out with a reason instead.
 - **Bilingual.** The interface and the extension name ship in both Simplified Chinese and English, picked automatically from your browser's UI language. Nothing to configure.
-- **It touches one tab, and only when asked.** The manifest declares `activeTab`, `scripting` and `downloads` — no `host_permissions`. Until you click the toolbar icon, no code runs.
+- **It touches one tab, and only when asked.** The manifest declares `activeTab`, `scripting`, `downloads` and `contextMenus` — no `host_permissions`; `contextMenus` only adds that one right-click entry. Until you click the toolbar icon, press the shortcut or pick the menu entry, it doesn't touch any page.
 - **No third parties.** Every icon URL comes from the site itself, never from a fallback service like Google S2. Which sites you inspect stays between you and your browser.
 
 ## 📦 Install
@@ -53,7 +53,7 @@ Then load `.output/chrome-mv3` via steps 2 and 3 above. For development, `pnpm d
 
 ## 🖱 Usage
 
-Open any page → click the toolbar icon. Every icon in the panel shows its size, format and file weight; click a thumbnail to enlarge it and toggle the backdrop between checkerboard, light and dark to inspect transparent edges. A multi-frame ICO lists every size it contains on its card, for example `16 / 32 / 48`.
+Open any page → click the toolbar icon, press `Alt+Shift+F` (`Option+Shift+F` on a Mac), or right-click an empty spot on the page and choose “Harvest icons from this page” — all three open the same panel. You can change the shortcut at `chrome://extensions/shortcuts`. Every icon in the panel shows its size, format and file weight; click a thumbnail to enlarge it and toggle the backdrop between checkerboard, light and dark to inspect transparent edges. A multi-frame ICO lists every size it contains on its card, for example `16 / 32 / 48`.
 
 Download icons one at a time, or grab them all as a single ZIP (with an `icons.json` inside recording each icon's source, size and format). Individual icons can also be copied as a link, an image, a Data URI, or a ready-made `<link>` tag.
 

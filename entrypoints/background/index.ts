@@ -1,3 +1,4 @@
+import { i18n } from '#i18n'
 import { downloadIconFile } from '@/utils/downloads'
 import { fetchIconBytes } from '@/utils/icon-bytes'
 import { discoverIcons } from '@/utils/icon-discovery'
@@ -5,7 +6,29 @@ import { buildZipFilename } from '@/utils/icon-naming'
 import { buildIconZipDataUrl } from '@/utils/icon-zip'
 import { onMessage } from '@/utils/messaging'
 
+const SCAN_PAGE_MENU_ID = 'scan-page'
+
 export default defineBackground(() => {
+  // 菜单项由 Chrome 持久保存，只需在安装/更新时建一次；每次 service worker 启动都建会报重复 id
+  browser.runtime.onInstalled.addListener(() => {
+    browser.contextMenus.create({
+      id: SCAN_PAGE_MENU_ID,
+      title: i18n.t('contextMenu.scanPage'),
+      contexts: ['page'],
+    })
+  })
+
+  browser.contextMenus.onClicked.addListener(async (info, tab) => {
+    if (info.menuItemId !== SCAN_PAGE_MENU_ID)
+      return
+    try {
+      await browser.action.openPopup(tab ? { windowId: tab.windowId } : undefined)
+    }
+    catch {
+      // Chrome < 127 没有 openPopup（同步抛 TypeError），窗口不在前台时会 reject；没有别的退路，静默即可
+    }
+  })
+
   onMessage('scanIcons', async ({ data }) => {
     try {
       const tab = await browser.tabs.get(data.tabId)

@@ -46,3 +46,6 @@ card:
   bgDark: Dark
   copied: Copied
   copyFailed: Failed
+
+contextMenu:
+  scanPage: Harvest icons from this page

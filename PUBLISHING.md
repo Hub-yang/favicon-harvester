@@ -17,7 +17,7 @@ Chrome 商店「隐私声明」页要求填一个可公开访问的隐私政策 
 
 本插件不收集、不存储、不上传任何用户数据。
 
-- 插件仅在你主动点击工具栏图标时运行，不会在后台持续监听或收集你的浏览数据。
+- 插件仅在你主动点击工具栏图标、按下插件快捷键或在右键菜单中选择「提取此页图标」时运行，不会在后台持续监听或收集你的浏览数据。
 - 插件仅读取当前标签页的 URL，以及页面 `<head>` 中与图标相关的公开标签信息（如 `<link rel="icon">`），用于发现该网站的图标资源。
 - 插件会向当前网站自身域名下的图标地址发起请求（获取图标文件与 web manifest），不会将任何信息发送到该网站之外的第三方服务器，不接入任何第三方图标兜底服务。
 - 插件不集成任何分析、统计或广告 SDK，不包含任何形式的用户跟踪。
@@ -49,7 +49,7 @@ Chrome 商店「隐私声明」页要求填一个可公开访问的隐私政策 
 ```
 图标提取器帮你快速拿到当前网站正在使用的图标文件。
 
-打开任意网页，点击工具栏上的插件图标，它会扫描这个网站声明的图标资源，包括页面头部的图标标签、网站的 Web App Manifest，以及网站根目录下的常见图标路径。
+打开任意网页，点击工具栏上的插件图标（也可以按它的快捷键，或者在页面空白处右键选择「提取此页图标」），它会扫描这个网站声明的图标资源，包括页面头部的图标标签、网站的 Web App Manifest，以及网站根目录下的常见图标路径。
 
 找到的图标会去重后按尺寸从大到小列在面板里，每一条都标着尺寸和格式，通常还带着文件有多大。点一下缩略图可以放大再看一眼，还能把背景换成浅色或者深色，图标边缘的透明部分干不干净，一眼就能看出来。
 
@@ -57,7 +57,7 @@ Chrome 商店「隐私声明」页要求填一个可公开访问的隐私政策 
 
 插件的界面跟着浏览器的语言走，简体中文和英文都有，不需要你另外设置。
 
-插件只在你点击时运行，只读取当前这一个标签页，只访问网站自己域名下的图标地址，不使用任何第三方图标服务，也不收集、不上传你的任何数据。
+插件只在你主动打开它时运行，只读取当前这一个标签页，只访问网站自己域名下的图标地址，不使用任何第三方图标服务，也不收集、不上传你的任何数据。
 
 适合需要参考同行网站图标的设计师，以及想拿到某个站点各个尺寸图标的开发者。
 ```
@@ -72,9 +72,10 @@ Chrome 商店「隐私声明」页要求填一个可公开访问的隐私政策 
 
 | 权限 | 用途说明草稿 |
 |---|---|
-| `activeTab` | 用于在用户主动点击插件图标时读取当前标签页的 URL，作为图标扫描目标页面并计算下载文件名里的域名前缀。不会在后台持续访问任何标签页。 |
-| `scripting` | 用于在用户点击插件图标时，向当前页面注入一个只读脚本，读取页面 `<head>` 中 `<link rel="icon">` 等标签的地址，以发现该网站声明的图标资源。脚本不修改页面内容、不执行页面中的任何代码、不读取图标信息之外的其他数据。 |
+| `activeTab` | 用于在用户主动点击插件图标、按下插件快捷键或在右键菜单中选择「提取此页图标」时读取当前标签页的 URL，作为图标扫描目标页面并计算下载文件名里的域名前缀。不会在后台持续访问任何标签页。 |
+| `scripting` | 用于在用户点击插件图标、按下插件快捷键或在右键菜单中选择「提取此页图标」时，向当前页面注入一个只读脚本，读取页面 `<head>` 中 `<link rel="icon">` 等标签的地址，以发现该网站声明的图标资源。脚本不修改页面内容、不执行页面中的任何代码、不读取图标信息之外的其他数据。 |
 | `downloads` | 用于把用户在插件面板里选中的图标文件保存到本地下载目录，这是插件的核心功能（下载图标）。用户选择打包下载时，插件在本地把这些图标压缩成一个 ZIP，同样通过该权限保存到下载目录，全过程不经过任何服务器。 |
+| `contextMenus` | 用于在网页空白处的右键菜单里添加一项「提取此页图标」，用户选择后打开插件面板，效果与点击工具栏上的插件图标相同。插件不读取右键位置的元素、选中的文字或链接，用户没有选择该菜单项时也不会访问页面。 |
 
 **数据使用声明**（Privacy practices 标签页会问"是否收集用户数据"，逐项勾选）：
 
@@ -99,7 +100,7 @@ Store listing 页顶部的语言下拉框里，选项对应扩展包里的 `_loc
 ```
 Favicon Harvester gets you the icon files that the website you are on is actually using.
 
-Open any page and click the extension's button in the toolbar. It looks at everything the site declares for its icons, including the icon tags in the page head, the site's Web App Manifest, and the usual file locations at the root of the domain.
+Open any page and click the extension's button in the toolbar, or press its keyboard shortcut, or right-click the page and choose Harvest icons from this page. It looks at everything the site declares for its icons, including the icon tags in the page head, the site's Web App Manifest, and the usual file locations at the root of the domain.
 
 Duplicates are removed and the results are listed from largest to smallest, each labeled with its dimensions and format, and usually its file size too. Click a thumbnail to see it enlarged, then switch the background to light or dark to check whether the transparent edges are clean.
 
@@ -107,7 +108,7 @@ Save the ones you need one at a time, or bundle them all into a single ZIP that 
 
 The interface follows your browser's language and is available in English and Simplified Chinese, with nothing to set up.
 
-The extension runs only when you click it, reads only the current tab, and only requests addresses on the site's own domain. It uses no third-party icon service and does not collect or upload any of your data.
+The extension runs only when you open it yourself, reads only the current tab, and only requests addresses on the site's own domain. It uses no third-party icon service and does not collect or upload any of your data.
 
 Useful for designers looking at how other sites handle their icons, and for developers who need every size a site provides.
 ```
@@ -134,7 +135,7 @@ Useful for designers looking at how other sites handle their icons, and for deve
 4. 进入「Store listing」标签页，填入 1.2 节的应用名称/描述/分类/语言，上传 1.3 节的截图。
 5. 进入「Privacy practices」标签页：
    - 填入 1.2 节的单一用途说明。
-   - 三个权限（`activeTab`/`scripting`/`downloads`）分别粘贴对应的用途说明。
+   - 四个权限（`activeTab`/`scripting`/`downloads`/`contextMenus`）分别粘贴对应的用途说明。
    - 数据使用声明按 1.2 节逐项勾选。
    - 填入 1.1 节生成的 Gist 隐私政策 URL。
 6. 进入「Distribution」标签页：
@@ -205,6 +206,7 @@ git push origin :refs/tags/v<版本号>  # 删远端标签
 | v0.3.1 | 纯视觉调整，能力不增不减：所有按钮配上图标，进行中、成功、失败时图标随状态变化；卡片上的下载与复制按钮缩小后并排放到第一行，文件体积挪到第二行 | 详细描述**无需改动**，权限没有增减，Privacy practices **无需改动**。⚠️ **截图建议重截**：旧截图里的按钮样式与卡片排版已和实际界面不一致，审核可能以「元数据不准确」打回 |
 | v0.3.2 | 修复两处扫描缺陷：`rel` 写成多个值的图标标签（如 `alternate icon`）原来会被漏掉，现在能识别；多帧 ICO 的卡片原来只显示一个尺寸，现在列出它包含的全部尺寸。本版同时带上 v0.3.1 的视觉调整（按钮图标、卡片按钮单行） | 详细描述**无需改动**（「head 里的图标标签」本就涵盖多值 `rel`），权限没有增减，Privacy practices **无需改动**。⚠️ **截图必须重截**（v0.3.1 起界面已变）。英文 listing（FH-21）与本版同一次提交 |
 | v0.3.3 | 修复一处复制缺陷：多帧 ICO 复制成 `<link>` 标签时，`sizes` 原来只写最大的那一帧（如 `48x48`），现在写全它包含的每一帧（如 `16x16 32x32 48x48`）。界面没有变化 | 详细描述**无需改动**，权限没有增减，Privacy practices **无需改动**，截图**无需重截**。等 v0.3.2 审核结束后再上传本版 |
+| v0.4.0 | 新增两种打开面板的方式：快捷键 `Alt+Shift+F`（Mac 上是 `Option+Shift+F`，可在 `chrome://extensions/shortcuts` 改），以及页面空白处右键菜单里的「提取此页图标」。面板和扫描结果与点图标时完全一样 | **Store listing 的详细描述必须更新**（中英两版，1.2 节已改好，直接抄）。**新增 `contextMenus` 权限**（安装与更新时都没有权限警告，已装用户不会被停用）：Privacy practices 要为它新填用途说明，`activeTab`、`scripting` 两段也改写了，都按 1.2 节权限表直接抄。⚠️ **公开 Gist 上的隐私政策要按 1.1 节同步**。截图**无需重截**（面板界面没变） |
 
 ---
 
@@ -220,7 +222,7 @@ Chrome 审核团队打回后会在开发者控制台和邮件里给出理由。�
 | Deceptive or inaccurate metadata / 元数据不准确 | 核对应用名称、描述、截图是否和插件实际行为一致，不要用夸大或无关的关键词堆砌描述吸引搜索 |
 | Spam and Placement in the Store / 垃圾内容和商店中的排名（违规参考 ID 形如 `Yellow Argon`）、「产品说明中有过多关键字」 | 商店描述按三条原则重写：①不写脱离句子的枚举列表，尤其是文件格式、扩展名、同义词串；②不用 `A / B / C` 斜杠罗列，也不用 `·` 起头的关键词式条目，改成完整段落句子；③同一个技术名词全篇最多提一次。改完只在 Store listing 标签页更新文字并重新提交，包和版本号都不用动。**2026-08-01 首次提交就是栽在描述里的 `PNG/SVG/ICO/JPEG/GIF/WEBP` 这一串格式枚举上** |
 | Uses remote code / 使用远程代码 | 本项目已在代码 review 阶段确认无 `eval`/动态执行远程内容，正常不会触发；如果收到这条，检查是否误引入了新依赖动态加载脚本 |
-| Requesting permissions not used / 声明了未使用的权限 | 核对 `wxt.config.ts` 里的 `permissions` 是否和代码里实际调用的 API 一致（当前只有 `activeTab`/`scripting`/`downloads`，均有对应代码路径使用） |
+| Requesting permissions not used / 声明了未使用的权限 | 核对 `wxt.config.ts` 里的 `permissions` 是否和代码里实际调用的 API 一致（当前只有 `activeTab`/`scripting`/`downloads`/`contextMenus`，均有对应代码路径使用） |
 
 排查修复后，回到开发者控制台对应标签页更新内容，重新提交即可，不需要新建项目。
 

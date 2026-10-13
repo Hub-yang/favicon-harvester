@@ -8,7 +8,7 @@ export default defineConfig({
     default_locale: 'zh_CN',
     name: '__MSG_extName__',
     description: '__MSG_extDescription__',
-    permissions: ['activeTab', 'scripting', 'downloads'],
+    permissions: ['activeTab', 'scripting', 'downloads', 'contextMenus'],
     // _execute_action 不派发 commands.onCommand，按键直接打开面板，background 不用写代码
     commands: {
       _execute_action: {

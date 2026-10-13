@@ -33,10 +33,23 @@ function makeTab(overrides: Partial<Browser.tabs.Tab> = {}): Browser.tabs.Tab {
   }
 }
 
+type MenuClickListener = Parameters<typeof fakeBrowser.contextMenus.onClicked.addListener>[0]
+let onMenuClicked: MenuClickListener | undefined
+// main() 返回那一刻监听是否已挂上：service worker 被菜单点击唤醒时，晚一拍注册就会丢掉这次点击
+let menuListenerRegisteredOnMain = false
+
+function menuClick(menuItemId: string): Parameters<MenuClickListener>[0] {
+  return { menuItemId, editable: false, modifiers: [] }
+}
+
 describe('background message handlers', () => {
   // main() 只注册一次消息监听；fakeBrowser 不 reset，避免清掉 messaging 的根监听导致往返失效
   beforeAll(() => {
+    vi.spyOn(fakeBrowser.contextMenus.onClicked, 'addListener').mockImplementation((listener) => {
+      onMenuClicked = listener
+    })
     background.main()
+    menuListenerRegisteredOnMain = onMenuClicked !== undefined
   })
 
   afterEach(() => {
@@ -153,5 +166,57 @@ describe('background message handlers', () => {
     })
 
     expect(result).toMatchObject({ success: false, error: 'Download interrupted' })
+  })
+
+  describe('右键菜单', () => {
+    it('安装时创建「提取此页图标」菜单，只挂在页面空白处', async () => {
+      const create = vi.spyOn(fakeBrowser.contextMenus, 'create').mockReturnValue('scan-page')
+
+      await fakeBrowser.runtime.onInstalled.trigger({ reason: 'install', temporary: false })
+
+      expect(create).toHaveBeenCalledWith({ id: 'scan-page', title: '提取此页图标', contexts: ['page'] })
+    })
+
+    it('点击监听在 main() 里同步注册', () => {
+      expect(menuListenerRegisteredOnMain).toBe(true)
+    })
+
+    it('点击菜单后在右键所在的窗口打开面板', async () => {
+      const openPopup = vi.spyOn(fakeBrowser.action, 'openPopup').mockResolvedValue()
+
+      await onMenuClicked!(menuClick('scan-page'), makeTab({ windowId: 7 }))
+
+      expect(openPopup).toHaveBeenCalledWith({ windowId: 7 })
+    })
+
+    it('拿不到 tab 时不传 windowId，交给 Chrome 用当前活动窗口', async () => {
+      const openPopup = vi.spyOn(fakeBrowser.action, 'openPopup').mockResolvedValue()
+
+      await onMenuClicked!(menuClick('scan-page'), undefined)
+
+      expect(openPopup).toHaveBeenCalledWith(undefined)
+    })
+
+    it('其他菜单项不打开面板', async () => {
+      const openPopup = vi.spyOn(fakeBrowser.action, 'openPopup').mockResolvedValue()
+
+      await onMenuClicked!(menuClick('something-else'), makeTab())
+
+      expect(openPopup).not.toHaveBeenCalled()
+    })
+
+    it('openPopup reject（如窗口不在前台）时不抛错', async () => {
+      vi.spyOn(fakeBrowser.action, 'openPopup').mockRejectedValue(new Error('Could not find an active browser window.'))
+
+      await expect(Promise.resolve(onMenuClicked!(menuClick('scan-page'), makeTab()))).resolves.toBeUndefined()
+    })
+
+    it('openPopup 不存在（Chrome < 127）同步抛 TypeError 时也不抛错', async () => {
+      vi.spyOn(fakeBrowser.action, 'openPopup').mockImplementation(() => {
+        throw new TypeError('browser.action.openPopup is not a function')
+      })
+
+      await expect(Promise.resolve(onMenuClicked!(menuClick('scan-page'), makeTab()))).resolves.toBeUndefined()
+    })
   })
 })
