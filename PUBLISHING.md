@@ -17,7 +17,7 @@ Chrome 商店「隐私声明」页要求填一个可公开访问的隐私政策 
 
 本插件不收集、不存储、不上传任何用户数据。
 
-- 插件仅在你主动点击工具栏图标、按下插件快捷键或在右键菜单中选择「提取此页图标」时运行，不会在后台持续监听或收集你的浏览数据。
+- 插件仅在你主动点击工具栏图标、按下插件快捷键或在右键菜单中选择「提取此页图标」时读取当前页面，不会在后台持续监听或收集你的浏览数据。
 - 插件仅读取当前标签页的 URL，以及页面 `<head>` 中与图标相关的公开标签信息（如 `<link rel="icon">`），用于发现该网站的图标资源。
 - 插件会向当前网站自身域名下的图标地址发起请求（获取图标文件与 web manifest），不会将任何信息发送到该网站之外的第三方服务器，不接入任何第三方图标兜底服务。
 - 插件不集成任何分析、统计或广告 SDK，不包含任何形式的用户跟踪。
@@ -57,7 +57,7 @@ Chrome 商店「隐私声明」页要求填一个可公开访问的隐私政策 
 
 插件的界面跟着浏览器的语言走，简体中文和英文都有，不需要你另外设置。
 
-插件只在你主动打开它时运行，只读取当前这一个标签页，只访问网站自己域名下的图标地址，不使用任何第三方图标服务，也不收集、不上传你的任何数据。
+插件只在你主动打开它时才会碰网页，而且只读取当前这一个标签页，只访问网站自己域名下的图标地址，不使用任何第三方图标服务，也不收集、不上传你的任何数据。
 
 适合需要参考同行网站图标的设计师，以及想拿到某个站点各个尺寸图标的开发者。
 ```
@@ -100,7 +100,7 @@ Store listing 页顶部的语言下拉框里，选项对应扩展包里的 `_loc
 ```
 Favicon Harvester gets you the icon files that the website you are on is actually using.
 
-Open any page and click the extension's button in the toolbar, or press its keyboard shortcut, or right-click the page and choose Harvest icons from this page. It looks at everything the site declares for its icons, including the icon tags in the page head, the site's Web App Manifest, and the usual file locations at the root of the domain.
+Open any page and click the extension's button in the toolbar, or press its keyboard shortcut, or right-click an empty spot on the page and choose “Harvest icons from this page”. It looks at everything the site declares for its icons, including the icon tags in the page head, the site's Web App Manifest, and the usual file locations at the root of the domain.
 
 Duplicates are removed and the results are listed from largest to smallest, each labeled with its dimensions and format, and usually its file size too. Click a thumbnail to see it enlarged, then switch the background to light or dark to check whether the transparent edges are clean.
 
@@ -108,7 +108,7 @@ Save the ones you need one at a time, or bundle them all into a single ZIP that 
 
 The interface follows your browser's language and is available in English and Simplified Chinese, with nothing to set up.
 
-The extension runs only when you open it yourself, reads only the current tab, and only requests addresses on the site's own domain. It uses no third-party icon service and does not collect or upload any of your data.
+The extension touches a page only when you open it yourself, reads only the current tab, and only requests addresses on the site's own domain. It uses no third-party icon service and does not collect or upload any of your data.
 
 Useful for designers looking at how other sites handle their icons, and for developers who need every size a site provides.
 ```

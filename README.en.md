@@ -59,7 +59,7 @@ Download icons one at a time, or grab them all as a single ZIP (with an `icons.j
 
 ## 🔬 How the discovery works
 
-Clicking the icon kicks off four collectors at once:
+Once the panel opens, four collectors start at once:
 
 | Source | What it reads |
 | --- | --- |

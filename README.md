@@ -59,7 +59,7 @@ pnpm build      # 产物在 .output/chrome-mv3
 
 ## 🔬 它是怎么找图标的
 
-点击图标后，background 同时从四个地方收集候选：
+面板打开后，background 同时从四个地方收集候选：
 
 | 来源 | 拿什么 |
 | --- | --- |
