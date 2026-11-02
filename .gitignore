@@ -16,7 +16,7 @@ web-ext.config.ts
 coverage
 
 # AI 协作约定文档，仅本地使用，不随开源仓库分发
-CLAUDE.md
+AGENTS.md
 
 # 本地协作文档（迭代排期表、学习笔记、方案讨论与审计记录），仅本地使用，不随开源仓库分发
 .docs/
