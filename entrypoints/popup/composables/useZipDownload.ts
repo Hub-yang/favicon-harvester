@@ -1,6 +1,6 @@
 import type { Ref } from 'vue'
 import type { IconCandidate } from '@/utils/types'
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import { sendMessage } from '@/utils/messaging'
 
 type ZipState = 'idle' | 'running' | 'done' | 'error'
@@ -15,6 +15,13 @@ type ZipState = 'idle' | 'running' | 'done' | 'error'
 export function useZipDownload(candidates: Ref<IconCandidate[]>, domain: Ref<string>) {
   const state = ref<ZipState>('idle')
   const skipped = ref(0)
+
+  watch(candidates, () => {
+    if (state.value !== 'running') {
+      state.value = 'idle'
+      skipped.value = 0
+    }
+  })
 
   async function run() {
     if (state.value === 'running' || candidates.value.length === 0)

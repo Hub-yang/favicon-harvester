@@ -10,7 +10,7 @@ const props = defineProps<{
   skipped: number
 }>()
 
-defineEmits<{ download: [] }>()
+defineEmits<{ download: [], rescan: [] }>()
 
 // 类名必须整串字面量写出，UnoCSS 才能在构建期扫描到并生成对应图标
 const BUTTON_ICON: Record<typeof props.state, string> = {
@@ -38,13 +38,25 @@ const buttonLabel = computed(() => {
 <template>
   <div class="flex items-center justify-between gap-2 px-3 py-2 border-b border-[var(--fh-border)]">
     <span class="text-[12px] text-[var(--fh-muted)]">{{ i18n.t('toolbar.iconCount', count) }}</span>
-    <button
-      class="flex-none flex items-center gap-1 px-2.5 py-1 text-[12px] rounded border-0 cursor-pointer text-white bg-[var(--fh-accent)] hover:bg-[var(--fh-accent-hover)] disabled:cursor-default disabled:opacity-60"
-      :disabled="state === 'running'"
-      @click="$emit('download')"
-    >
-      <span :class="BUTTON_ICON[state]" class="text-[13px]" aria-hidden="true" />
-      {{ buttonLabel }}
-    </button>
+    <div class="flex items-center gap-1">
+      <button
+        class="flex-none flex items-center gap-1 px-2.5 py-1 text-[12px] rounded border-0 cursor-pointer text-white bg-[var(--fh-accent)] hover:bg-[var(--fh-accent-hover)] disabled:cursor-default disabled:opacity-60"
+        :disabled="state === 'running'"
+        @click="$emit('download')"
+      >
+        <span :class="BUTTON_ICON[state]" class="text-[13px]" aria-hidden="true" />
+        {{ buttonLabel }}
+      </button>
+      <button
+        type="button"
+        class="flex-none flex items-center px-1.5 py-1 rounded border-0 cursor-pointer text-[var(--fh-muted)] bg-transparent hover:bg-[var(--fh-bg)] disabled:cursor-default disabled:opacity-60"
+        :title="i18n.t('toolbar.rescan')"
+        :aria-label="i18n.t('toolbar.rescan')"
+        :disabled="state === 'running'"
+        @click="$emit('rescan')"
+      >
+        <span class="i-lucide-rotate-cw text-[13px]" aria-hidden="true" />
+      </button>
+    </div>
   </div>
 </template>

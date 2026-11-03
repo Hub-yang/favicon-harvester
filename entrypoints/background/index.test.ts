@@ -3,13 +3,12 @@ import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest'
 import { fakeBrowser } from 'wxt/testing/fake-browser'
 import { downloadIconFile } from '@/utils/downloads'
 import { fetchIconBytes } from '@/utils/icon-bytes'
-import { discoverIcons } from '@/utils/icon-discovery'
 import { buildIconZipDataUrl } from '@/utils/icon-zip'
 import { sendMessage } from '@/utils/messaging'
 import background from './index'
 
-// 隔离下层：background 只做"取 tab → 调 discoverIcons / 转发 downloadIconFile"的薄编排
-vi.mock('@/utils/icon-discovery', () => ({ discoverIcons: vi.fn() }))
+const scanner = vi.hoisted(() => ({ scan: vi.fn(), invalidate: vi.fn() }))
+vi.mock('@/utils/manual-icon-scanner', () => ({ createManualIconScanner: () => scanner }))
 vi.mock('@/utils/downloads', () => ({ downloadIconFile: vi.fn() }))
 vi.mock('@/utils/icon-bytes', () => ({ fetchIconBytes: vi.fn() }))
 vi.mock('@/utils/icon-zip', () => ({ buildIconZipDataUrl: vi.fn() }))
@@ -34,6 +33,9 @@ function makeTab(overrides: Partial<Browser.tabs.Tab> = {}): Browser.tabs.Tab {
 }
 
 type MenuClickListener = Parameters<typeof fakeBrowser.contextMenus.onClicked.addListener>[0]
+let onUpdated: Parameters<typeof fakeBrowser.tabs.onUpdated.addListener>[0]
+let onRemoved: Parameters<typeof fakeBrowser.tabs.onRemoved.addListener>[0]
+let onReplaced: Parameters<typeof fakeBrowser.tabs.onReplaced.addListener>[0]
 let onMenuClicked: MenuClickListener | undefined
 // main() 返回那一刻监听是否已挂上：service worker 被菜单点击唤醒时，晚一拍注册就会丢掉这次点击
 let menuListenerRegisteredOnMain = false
@@ -48,6 +50,15 @@ describe('background message handlers', () => {
     vi.spyOn(fakeBrowser.contextMenus.onClicked, 'addListener').mockImplementation((listener) => {
       onMenuClicked = listener
     })
+    vi.spyOn(fakeBrowser.tabs.onUpdated, 'addListener').mockImplementation((fn) => {
+      onUpdated = fn
+    })
+    vi.spyOn(fakeBrowser.tabs.onRemoved, 'addListener').mockImplementation((fn) => {
+      onRemoved = fn
+    })
+    vi.spyOn(fakeBrowser.tabs.onReplaced, 'addListener').mockImplementation((fn) => {
+      onReplaced = fn
+    })
     background.main()
     menuListenerRegisteredOnMain = onMenuClicked !== undefined
   })
@@ -57,28 +68,24 @@ describe('background message handlers', () => {
     vi.clearAllMocks()
   })
 
-  it('scanIcons：取到 tab 后调用 discoverIcons 并回传结果', async () => {
-    const tab = makeTab()
-    const scanResult: ScanResult = {
-      restricted: false,
-      candidates: [{ url: 'https://example.com/favicon.ico', source: 'well-known', sourceDetail: 'favicon.ico' }],
-    }
-    vi.spyOn(fakeBrowser.tabs, 'get').mockResolvedValue(tab)
-    vi.mocked(discoverIcons).mockResolvedValue(scanResult)
-
-    const result = await sendMessage('scanIcons', { tabId: 1 })
-
-    expect(discoverIcons).toHaveBeenCalledWith(tab)
-    expect(result).toEqual(scanResult)
+  it('scanIcons：普通请求可复用，force 显式传给扫描器并保留取消语义', async () => {
+    const scanResult: ScanResult = { restricted: false, candidates: [], cancelled: true }
+    scanner.scan.mockResolvedValue(scanResult)
+    expect(await sendMessage('scanIcons', { tabId: 1 })).toEqual(scanResult)
+    expect(scanner.scan).toHaveBeenLastCalledWith(1, undefined)
+    expect(await sendMessage('scanIcons', { tabId: 1, force: true })).toEqual(scanResult)
+    expect(scanner.scan).toHaveBeenLastCalledWith(1, true)
   })
 
-  it('scanIcons：tab.get 抛错时降级为受限空结果，不透传异常', async () => {
-    vi.spyOn(fakeBrowser.tabs, 'get').mockRejectedValue(new Error('No tab with id'))
-
-    const result = await sendMessage('scanIcons', { tabId: 999 })
-
-    expect(discoverIcons).not.toHaveBeenCalled()
-    expect(result).toEqual({ restricted: true, candidates: [] })
+  it('loading、URL、关闭和替换使缓存失效，favicon 更新不取消扫描', () => {
+    const tab = makeTab()
+    onUpdated(1, { favIconUrl: 'https://example.com/new.png' }, tab)
+    expect(scanner.invalidate).not.toHaveBeenCalled()
+    onUpdated(1, { status: 'loading' }, tab)
+    onUpdated(2, { url: 'https://example.com/next' }, tab)
+    onRemoved(3, { windowId: 1, isWindowClosing: false })
+    onReplaced(5, 4)
+    expect(scanner.invalidate.mock.calls).toEqual([[1], [2], [3], [4], [5]])
   })
 
   it('downloadIcon：转发 url 与 filename 给 downloadIconFile', async () => {

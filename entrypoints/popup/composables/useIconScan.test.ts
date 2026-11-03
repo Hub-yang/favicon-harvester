@@ -231,4 +231,122 @@ describe('useIconScan', () => {
     expect(wrapper.vm.showRetryPanel).toBe(true)
     expect(wrapper.vm.exhausted).toBe(false)
   })
+  it('初次可复用，重扫强制并重新校验图片，空结果保留三次失败重试', async () => {
+    stubActiveTab(makeTab())
+    vi.mocked(sendMessage).mockResolvedValue({ restricted: false, candidates: [CANDIDATE_A] })
+    vi.mocked(verifyImageLoadable).mockResolvedValue(true)
+    const wrapper = mountScan()
+    await flushPromises()
+    expect(sendMessage).toHaveBeenLastCalledWith('scanIcons', { tabId: 1 })
+    vi.mocked(sendMessage).mockResolvedValue({ restricted: false, candidates: [] })
+    const pending = wrapper.vm.rescan()
+    expect(wrapper.vm.loading).toBe(true)
+    expect(wrapper.vm.candidates).toEqual([])
+    await pending
+    expect(sendMessage).toHaveBeenLastCalledWith('scanIcons', { tabId: 1, force: true })
+    for (let i = 0; i < 3; i++) {
+      expect(wrapper.vm.exhausted).toBe(false)
+      wrapper.vm.retry()
+      await advanceDebounce()
+      await flushPromises()
+    }
+    expect(wrapper.vm.exhausted).toBe(true)
+    expect(sendMessage).toHaveBeenLastCalledWith('scanIcons', { tabId: 1, force: true })
+  })
+
+  it('取消结果不消耗失败重试次数', async () => {
+    stubActiveTab(makeTab())
+    vi.mocked(sendMessage).mockResolvedValue({ restricted: false, candidates: [], cancelled: true })
+    const wrapper = mountScan()
+    await flushPromises()
+    for (let i = 0; i < 4; i++) {
+      wrapper.vm.retry()
+      await advanceDebounce()
+      await flushPromises()
+    }
+    expect(wrapper.vm.exhausted).toBe(false)
+    expect(wrapper.vm.retrying).toBe(false)
+    expect(wrapper.vm.showRetryPanel).toBe(true)
+  })
+
+  it('卸载后防抖回调不能发起扫描，在途图片结果不能写入', async () => {
+    stubActiveTab(makeTab())
+    vi.mocked(sendMessage).mockResolvedValue({ restricted: false, candidates: [] })
+    const wrapper = mountScan()
+    await flushPromises()
+    wrapper.vm.retry()
+    wrapper.unmount()
+    await advanceDebounce()
+    expect(sendMessage).toHaveBeenCalledTimes(1)
+
+    let finish!: (value: boolean) => void
+    vi.mocked(sendMessage).mockResolvedValue({ restricted: false, candidates: [CANDIDATE_A] })
+    vi.mocked(verifyImageLoadable).mockReturnValue(new Promise((resolve) => {
+      finish = resolve
+    }))
+    const other = mountScan()
+    await flushPromises()
+    const state = other.vm
+    other.unmount()
+    finish(true)
+    await flushPromises()
+    expect(state.candidates).toEqual([])
+  })
+
+  it('重扫覆盖旧重试，旧图片校验不能覆盖新列表与状态', async () => {
+    stubActiveTab(makeTab())
+    vi.mocked(sendMessage).mockResolvedValue({ restricted: false, candidates: [] })
+    const wrapper = mountScan()
+    await flushPromises()
+    let finish!: (value: boolean) => void
+    vi.mocked(sendMessage).mockResolvedValue({ restricted: false, candidates: [CANDIDATE_A] })
+    vi.mocked(verifyImageLoadable).mockReturnValueOnce(new Promise((resolve) => {
+      finish = resolve
+    }))
+    wrapper.vm.retry()
+    await advanceDebounce()
+    await flushPromises()
+    vi.mocked(sendMessage).mockResolvedValue({ restricted: false, candidates: [CANDIDATE_B] })
+    vi.mocked(verifyImageLoadable).mockResolvedValue(true)
+    await wrapper.vm.rescan()
+    finish(true)
+    await flushPromises()
+    expect(wrapper.vm.candidates).toEqual([CANDIDATE_B])
+    expect(wrapper.vm.loading).toBe(false)
+    expect(wrapper.vm.retrying).toBe(false)
+  })
+
+  it.each(['query', 'message'])('旧 %s 结果不能覆盖新请求域名、列表或等待状态', async (phase) => {
+    stubActiveTab(makeTab())
+    vi.mocked(sendMessage).mockResolvedValue({ restricted: false, candidates: [] })
+    vi.mocked(verifyImageLoadable).mockResolvedValue(true)
+    const wrapper = mountScan()
+    await flushPromises()
+    let finishQuery!: (tabs: Browser.tabs.Tab[]) => void
+    let finishMessage!: (result: ScanResult) => void
+    if (phase === 'query') {
+      vi.mocked(fakeBrowser.tabs.query).mockReturnValueOnce(new Promise((resolve) => {
+        finishQuery = resolve
+      }))
+    }
+    else {
+      vi.mocked(sendMessage).mockReturnValueOnce(new Promise((resolve) => {
+        finishMessage = resolve
+      }))
+    }
+    wrapper.vm.retry()
+    await advanceDebounce()
+    await flushPromises()
+    vi.mocked(fakeBrowser.tabs.query).mockResolvedValue([makeTab({ id: 2, url: 'https://new.example/' })])
+    vi.mocked(sendMessage).mockResolvedValue({ restricted: false, candidates: [CANDIDATE_B] })
+    await wrapper.vm.rescan()
+    if (phase === 'query')
+      finishQuery([makeTab()])
+    else finishMessage({ restricted: false, candidates: [CANDIDATE_A] })
+    await flushPromises()
+    expect(wrapper.vm.domain).toBe('new.example')
+    expect(wrapper.vm.candidates).toEqual([CANDIDATE_B])
+    expect(wrapper.vm.loading).toBe(false)
+    expect(wrapper.vm.retrying).toBe(false)
+  })
 })

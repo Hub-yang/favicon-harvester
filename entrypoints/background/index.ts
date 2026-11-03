@@ -1,9 +1,9 @@
 import { i18n } from '#i18n'
 import { downloadIconFile } from '@/utils/downloads'
 import { fetchIconBytes } from '@/utils/icon-bytes'
-import { discoverIcons } from '@/utils/icon-discovery'
 import { buildZipFilename } from '@/utils/icon-naming'
 import { buildIconZipDataUrl } from '@/utils/icon-zip'
+import { createManualIconScanner } from '@/utils/manual-icon-scanner'
 import { onMessage } from '@/utils/messaging'
 
 const SCAN_PAGE_MENU_ID = 'scan-page'
@@ -29,16 +29,17 @@ export default defineBackground(() => {
     }
   })
 
-  onMessage('scanIcons', async ({ data }) => {
-    try {
-      const tab = await browser.tabs.get(data.tabId)
-      return await discoverIcons(tab)
-    }
-    catch {
-      // tab 在扫描间隙被关闭/失效：降级为受限结果，避免异常透传给 popup
-      return { restricted: true, candidates: [] }
-    }
+  const scanner = createManualIconScanner()
+  browser.tabs.onUpdated.addListener((tabId, change) => {
+    if (change.status === 'loading' || change.url !== undefined)
+      scanner.invalidate(tabId)
   })
+  browser.tabs.onRemoved.addListener(tabId => scanner.invalidate(tabId))
+  browser.tabs.onReplaced.addListener((addedId, removedId) => {
+    scanner.invalidate(removedId)
+    scanner.invalidate(addedId)
+  })
+  onMessage('scanIcons', ({ data }) => scanner.scan(data.tabId, data.force))
 
   onMessage('downloadIcon', ({ data }) => downloadIconFile(data.url, data.filename))
 

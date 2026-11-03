@@ -1,98 +1,117 @@
 import type { IconCandidate } from '@/utils/types'
 import { useDebounceFn } from '@vueuse/core'
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { sendMessage } from '@/utils/messaging'
 import { sortCandidatesBySize } from '@/utils/sort-candidates'
 import { verifyImageLoadable } from '@/utils/verify-image-loadable'
 
-// 用户仅点击"重试"按钮的失败次数才计入，达到该次数后终止并隐藏按钮
 const MAX_RETRY_COUNT = 3
 
 export function useIconScan() {
-  // 仅初次挂载扫描期间为 true，与 retrying 互不影响，避免手动重试时被"正在扫描…"横幅顶掉重试面板
   const loading = ref(true)
   const restricted = ref(false)
   const candidates = ref<IconCandidate[]>([])
   const domain = ref('')
   const retrying = ref(false)
   const retryCount = ref(0)
+  let active = true
+  let sequence = 0
 
   const exhausted = computed(() => retryCount.value >= MAX_RETRY_COUNT)
   const showRetryPanel = computed(() => !loading.value && candidates.value.length === 0)
 
-  async function performScan() {
-    const [tab] = await browser.tabs.query({ active: true, currentWindow: true })
-    if (tab?.url) {
-      try {
-        domain.value = new URL(tab.url).hostname
-      }
-      catch {
-        domain.value = ''
-      }
+  async function runScan(mode: 'initial' | 'rescan' | 'retry') {
+    const own = ++sequence
+    const current = () => active && sequence === own
+    if (mode === 'retry') {
+      retrying.value = true
     }
-
-    if (tab?.id === undefined) {
-      restricted.value = false
+    else {
+      loading.value = true
+      retrying.value = false
+      retryCount.value = 0
       candidates.value = []
-      return
     }
 
+    let completed = false
+    let nextDomain = ''
     try {
-      const result = await sendMessage('scanIcons', { tabId: tab.id })
-      restricted.value = result.restricted
-      // 后台探测通过只代表 fetch 可达，仍需在 popup 自身上下文验证真的能渲染出来
+      const [tab] = await browser.tabs.query({ active: true, currentWindow: true })
+      if (!current())
+        return
+      if (tab?.url) {
+        try {
+          nextDomain = new URL(tab.url).hostname
+        }
+        catch {}
+      }
+      if (tab?.id === undefined) {
+        restricted.value = false
+        candidates.value = []
+        domain.value = nextDomain
+        completed = true
+        return
+      }
+
+      const result = await sendMessage('scanIcons', { tabId: tab.id, ...(mode !== 'initial' && { force: true }) })
+      if (!current())
+        return
+      if (result.cancelled) {
+        restricted.value = false
+        candidates.value = []
+        domain.value = nextDomain
+        return
+      }
+      // 后台元数据可复用，但每次都必须在 popup 上下文实际验证图片。
       const verified = await Promise.all(
         result.candidates.map(async candidate => (await verifyImageLoadable(candidate.url)) ? candidate : undefined),
       )
-      // 排序放在验证之后：死链已被剔除，排出来的顺序即最终展示顺序
+      if (!current())
+        return
+      restricted.value = result.restricted
+      domain.value = nextDomain
       candidates.value = sortCandidatesBySize(verified.filter((candidate): candidate is IconCandidate => candidate !== undefined))
+      completed = true
     }
     catch {
-      // sendMessage 自身可能因扩展上下文失效等传输层原因 reject，按"本次未获取到候选"处理
-      restricted.value = false
-      candidates.value = []
+      if (current()) {
+        restricted.value = false
+        candidates.value = []
+        domain.value = nextDomain
+        completed = true
+      }
+    }
+    finally {
+      if (current()) {
+        if (mode === 'retry' && completed)
+          retryCount.value = candidates.value.length ? 0 : retryCount.value + 1
+        loading.value = false
+        retrying.value = false
+      }
     }
   }
 
-  onMounted(async () => {
-    loading.value = true
-    try {
-      await performScan()
-    }
-    finally {
-      loading.value = false
-    }
+  onMounted(() => runScan('initial'))
+  onUnmounted(() => {
+    active = false
+    sequence++
   })
 
-  async function runRetry() {
-    if (retrying.value || exhausted.value)
+  async function rescan() {
+    if (!active || loading.value)
       return
-    retrying.value = true
-    try {
-      await performScan()
-    }
-    finally {
-      retryCount.value = candidates.value.length > 0 ? 0 : retryCount.value + 1
-      retrying.value = false
-    }
+    await runScan('rescan')
   }
 
-  // 防抖收敛快速连点；runRetry 内部的 retrying guard 再防止"防抖窗口外、上一次请求尚未返回"时的连点
-  const retry = useDebounceFn(runRetry, 300)
+  const retry = useDebounceFn(async () => {
+    if (!active || loading.value || retrying.value || exhausted.value)
+      return
+    await runScan('retry')
+  }, 300)
 
   function removeCandidate(url: string) {
     candidates.value = candidates.value.filter(candidate => candidate.url !== url)
   }
 
-  return {
-    loading,
-    restricted,
-    candidates,
-    domain,
-    retrying,
-    exhausted,
-    showRetryPanel,
-    retry,
-    removeCandidate,
-  }
+  return { loading, restricted, candidates, domain, retrying, exhausted, showRetryPanel, retry, rescan, removeCandidate }
 }

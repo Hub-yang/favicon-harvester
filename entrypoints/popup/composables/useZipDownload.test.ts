@@ -118,4 +118,25 @@ describe('useZipDownload', () => {
     expect(sendMessage).not.toHaveBeenCalled()
     expect(wrapper.vm.state).toBe('idle')
   })
+
+  it('打包中的候选摘除不重置运行状态或破坏原下载快照', async () => {
+    const candidates = ref([CANDIDATE_A, CANDIDATE_B])
+    let finish!: (result: ZipDownloadResult) => void
+    vi.mocked(sendMessage).mockReturnValue(new Promise((resolve) => {
+      finish = resolve
+    }))
+    const Harness = defineComponent({
+      setup: () => useZipDownload(candidates, ref('example.com')),
+      template: '<div />',
+    })
+    const wrapper = mount(Harness)
+    const pending = wrapper.vm.run()
+    candidates.value = [CANDIDATE_B]
+    await flushPromises()
+    expect(wrapper.vm.state).toBe('running')
+    expect(sendMessage).toHaveBeenCalledWith('downloadIconsZip', { candidates: [CANDIDATE_A, CANDIDATE_B], domain: 'example.com' })
+    finish({ success: true, packed: 2, skipped: 0 })
+    await pending
+    expect(wrapper.vm.state).toBe('done')
+  })
 })

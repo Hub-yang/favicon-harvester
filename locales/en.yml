@@ -17,6 +17,7 @@ retry:
   retry: Retry
 
 toolbar:
+  rescan: Rescan
   iconCount:
     1: 1 icon
     n: $1 icons

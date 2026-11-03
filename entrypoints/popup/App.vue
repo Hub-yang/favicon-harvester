@@ -7,8 +7,13 @@ import StatusBanner from './components/StatusBanner.vue'
 import { useIconScan } from './composables/useIconScan'
 import { useZipDownload } from './composables/useZipDownload'
 
-const { loading, restricted, candidates, domain, retrying, exhausted, showRetryPanel, retry, removeCandidate } = useIconScan()
+const { loading, restricted, candidates, domain, retrying, exhausted, showRetryPanel, retry, rescan, removeCandidate } = useIconScan()
 const { state: zipState, skipped, run: downloadZip } = useZipDownload(candidates, domain)
+
+function rescanIfIdle() {
+  if (zipState.value !== 'running')
+    void rescan()
+}
 
 const appVersion = browser.runtime.getManifest().version
 </script>
@@ -31,6 +36,7 @@ const appVersion = browser.runtime.getManifest().version
       :state="zipState"
       :skipped="skipped"
       @download="downloadZip"
+      @rescan="rescanIfIdle"
     />
 
     <ul v-if="candidates.length" class="m-0 p-0 list-none divide-y divide-[var(--fh-border)]">

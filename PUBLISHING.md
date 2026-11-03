@@ -15,7 +15,9 @@ Chrome 商店「隐私声明」页要求填一个可公开访问的隐私政策 
 ```markdown
 # 图标提取器（Favicon Harvester）隐私政策
 
-本插件不收集、不存储、不上传任何用户数据。
+本插件不向开发者或第三方收集、上传用户数据，不把扫描记录写入插件的持久存储。
+
+已扫描页面的地址、图标声明和候选元数据会临时保存在后台内存，最多复用 30 秒，后台终止后丢失。过期后不再复用，在后续缓存操作时清理，不保证到点立即擦除；包含内嵌图片地址的结果不进入此缓存。「重新扫描」与「重试」绕过插件缓存，浏览器自身的 HTTP 缓存仍照常生效。
 
 - 插件仅在你主动点击工具栏图标、按下插件快捷键或在右键菜单中选择「提取此页图标」时读取当前页面，不会在后台持续监听或收集你的浏览数据。
 - 插件仅读取当前标签页的 URL，以及页面 `<head>` 中与图标相关的公开标签信息（如 `<link rel="icon">`），用于发现该网站的图标资源。
@@ -55,9 +57,11 @@ Chrome 商店「隐私声明」页要求填一个可公开访问的隐私政策 
 
 你可以挑需要的那些单独下载，也可以把它们打包成一个 ZIP 一次拿走，包里附了一份清单，记着每个图标是从网站的哪个位置找到的。下载的文件会按网站的域名分到各自的文件夹里，不会把你的下载目录弄乱。单个图标还能直接复制走——复制地址、复制图片本身、复制 Data URI，或者复制一段现成的 link 标签。下载得到的是网站上的原始文件，插件不做任何转码或压缩。
 
+短时间重开同一页面时，可以复用刚才的扫描结果，减少重复等待；需要时点击「重新扫描」即可。
+
 插件的界面跟着浏览器的语言走，简体中文和英文都有，不需要你另外设置。
 
-插件只在你主动打开它时才会碰网页，而且只读取当前这一个标签页，只访问网站自己域名下的图标地址，不使用任何第三方图标服务，也不收集、不上传你的任何数据。
+插件只在你主动打开它时才会碰网页，而且只读取当前这一个标签页，只访问网站自己域名下的图标地址，不使用任何第三方图标服务，也不向开发者或第三方收集、上传你的数据。页面地址与图标元数据仅临时放在后台内存，最多复用 30 秒，不写入插件持久存储，后台终止后丢失。
 
 适合需要参考同行网站图标的设计师，以及想拿到某个站点各个尺寸图标的开发者。
 ```
@@ -106,9 +110,11 @@ Duplicates are removed and the results are listed from largest to smallest, each
 
 Save the ones you need one at a time, or bundle them all into a single ZIP that comes with a list noting where on the site each file was found. Downloads go into a folder named after the website, so your downloads folder stays tidy. You can also copy any single result straight away, as its address, as the image itself, as a Data URI, or as a ready-to-paste link tag. What you get is the original file from the website, never converted or compressed.
 
+Reopen the same page shortly afterwards to reuse the recent scan, or choose Rescan when needed.
+
 The interface follows your browser's language and is available in English and Simplified Chinese, with nothing to set up.
 
-The extension touches a page only when you open it yourself, reads only the current tab, and only requests addresses on the site's own domain. It uses no third-party icon service and does not collect or upload any of your data.
+The extension touches a page only when you open it yourself, reads only the current tab, and only requests addresses on the site's own domain. It uses no third-party icon service and does not collect or upload your data to the developer or third parties. Page addresses and icon metadata stay temporarily in background memory for reuse for up to 30 seconds, never in persistent extension storage; they are lost when the worker stops.
 
 Useful for designers looking at how other sites handle their icons, and for developers who need every size a site provides.
 ```
@@ -207,6 +213,7 @@ git push origin :refs/tags/v<版本号>  # 删远端标签
 | v0.3.2 | 修复两处扫描缺陷：`rel` 写成多个值的图标标签（如 `alternate icon`）原来会被漏掉，现在能识别；多帧 ICO 的卡片原来只显示一个尺寸，现在列出它包含的全部尺寸。本版同时带上 v0.3.1 的视觉调整（按钮图标、卡片按钮单行） | 详细描述**无需改动**（「head 里的图标标签」本就涵盖多值 `rel`），权限没有增减，Privacy practices **无需改动**。⚠️ **截图必须重截**（v0.3.1 起界面已变）。英文 listing（FH-21）与本版同一次提交 |
 | v0.3.3 | 修复一处复制缺陷：多帧 ICO 复制成 `<link>` 标签时，`sizes` 原来只写最大的那一帧（如 `48x48`），现在写全它包含的每一帧（如 `16x16 32x32 48x48`）。界面没有变化 | 详细描述**无需改动**，权限没有增减，Privacy practices **无需改动**，截图**无需重截**。等 v0.3.2 审核结束后再上传本版 |
 | v0.4.0 | 新增两种打开面板的方式：快捷键 `Alt+Shift+F`（Mac 上是 `Option+Shift+F`，可在 `chrome://extensions/shortcuts` 改），以及页面空白处右键菜单里的「提取此页图标」。面板和扫描结果与点图标时完全一样。新功能，版本号选 **minor** | **Store listing 的详细描述必须更新**：中文与 English 两个语言各粘贴一次，1.2 节已改好，直接抄；名称与简短描述来自 manifest，**无需改动**。**新增 `contextMenus` 权限**，安装与更新时都没有权限警告，已装用户不会被停用。Privacy practices 要改三处：新增的 `contextMenus` 文本框填用途说明；`activeTab`、`scripting` 两段换成新写法（都按 1.2 节权限表直接抄）；单一用途说明与数据使用声明**无需改动**。⚠️ **公开 Gist 上的隐私政策要按 1.1 节同步**（只改了第一条）。截图**无需重截**（面板界面没变） |
+| v0.5.0（待发布） | 同页手动扫描结果最多复用 30 秒，新增重新扫描，重试绕过插件缓存；不新增权限、不落盘，后台重启可提前丢失 | 发布前将中英详细描述按 1.2 同步，并按 1.1 更新公开 Gist 隐私政策；复核 Privacy practices 与实际临时内存处理一致。四权限用途、名称和简短描述无需改动；面板新增按钮，截图需复核。此处仅准备发布说明，尚未更新在线政策或提交商店 |
 
 ---
 

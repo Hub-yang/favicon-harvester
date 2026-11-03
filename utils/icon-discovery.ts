@@ -12,25 +12,35 @@ function buildFallbackCandidates(favIconUrl: string | undefined): IconCandidate[
   return candidate ? [candidate] : []
 }
 
-export async function discoverIcons(tab: Browser.tabs.Tab): Promise<ScanResult> {
-  if (!tab.url || tab.id === undefined || checkRestrictedUrl(tab.url))
-    return { restricted: true, candidates: buildFallbackCandidates(tab.favIconUrl) }
+export type IconPageSnapshot
+  = | { restricted: true }
+    | { restricted: false, documentId?: string, scan: DomScanResult }
 
-  let scan: DomScanResult
+export async function readIconPage(tab: Browser.tabs.Tab): Promise<IconPageSnapshot> {
+  if (!tab.url || tab.id === undefined || checkRestrictedUrl(tab.url))
+    return { restricted: true }
+
   try {
     const results = await browser.scripting.executeScript<[], DomScanResult>({
       target: { tabId: tab.id },
       files: ['/scan-dom-icons.js'],
     })
-    const result = results[0]?.result
-    if (!result)
-      throw new Error('scan-dom-icons.js returned no result')
-    scan = result
+    const result = results[0]
+    if (!result?.result)
+      return { restricted: true }
+    return { restricted: false, documentId: result.documentId, scan: result.result }
   }
   catch {
-    return { restricted: true, candidates: buildFallbackCandidates(tab.favIconUrl) }
+    return { restricted: true }
   }
+}
 
+export async function discoverIcons(tab: Browser.tabs.Tab, page?: IconPageSnapshot): Promise<ScanResult> {
+  const snapshot = page ?? await readIconPage(tab)
+  if (snapshot.restricted || !tab.url)
+    return { restricted: true, candidates: buildFallbackCandidates(tab.favIconUrl) }
+
+  const scan = snapshot.scan
   const origin = new URL(tab.url).origin
   const manifestCandidates = scan.manifestHref ? await fetchManifestCandidates(scan.manifestHref) : []
   const tabFavIconCandidate = buildTabFavIconCandidate(tab.favIconUrl)

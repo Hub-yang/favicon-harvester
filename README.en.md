@@ -26,10 +26,11 @@ This extension collapses all of that into one click.
 ## 🧩 What it does
 
 - **Four sources, probed in parallel.** `<link>` tags in the page, the Web App Manifest, well-known paths like `/favicon.ico`, and the `tab.favIconUrl` the browser already has.
-- **Only live icons make the list.** Every candidate is fetched in the background to confirm it resolves, then rendered as an actual `<img>` in the panel. Both checks have to pass. The "request succeeded but the image is broken" case gets filtered out.
+- **Only live icons make the list.** Fresh scans fetch candidates in the background to confirm they resolve. The panel always performs an actual image render check, including on cache hits. Both checks have to pass. The "request succeeded but the image is broken" case gets filtered out.
 - **You get all of them.** Deduplicated candidates are listed in full, sorted largest first with SVG on top. Which one suits you is your call — the extension doesn't guess.
 - **Downloads are byte-for-byte.** No transcoding, no resizing, no compression. Filenames follow `domain-source-size.ext` and land under `favicon-harvester/<domain>/` in your downloads folder instead of cluttering its root, and one click can grab everything at once.
 - **Four ways to copy.** Expand the Copy button on a card to grab the link, the image itself, a Data URI, or a ready-made `<link rel="icon">` tag you can paste straight into `<head>`. Copying the image is PNG-only — anything else would have to be transcoded to enter the system clipboard, which contradicts the whole byte-for-byte promise, so it is greyed out with a reason instead.
+- **Short reuse on the same page.** Reopening the same tab and document with an unchanged URL and icon declarations can reuse background results for up to 30 seconds. Use “Rescan” or the empty-result “Retry” to bypass the extension cache. Page addresses and icon metadata stay temporarily in background memory, never in persistent extension storage or uploads; a worker restart can discard them earlier. The browser’s own HTTP cache still applies.
 - **Bilingual.** The interface and the extension name ship in both Simplified Chinese and English, picked automatically from your browser's UI language. Nothing to configure.
 - **It touches one tab, and only when asked.** The manifest declares `activeTab`, `scripting`, `downloads` and `contextMenus` — no `host_permissions`; `contextMenus` only adds that one right-click entry. Until you click the toolbar icon, press the shortcut or pick the menu entry, it doesn't touch any page.
 - **No third parties.** Every icon URL comes from the site itself, never from a fallback service like Google S2. Which sites you inspect stays between you and your browser.
@@ -59,7 +60,7 @@ Download icons one at a time, or grab them all as a single ZIP (with an `icons.j
 
 ## 🔬 How the discovery works
 
-Once the panel opens, four collectors start at once:
+On opening, the panel first reads the page identity and icon declarations. A matching short-lived cache entry reuses candidates; otherwise (or on Rescan), discovery uses four sources:
 
 | Source | What it reads |
 | --- | --- |

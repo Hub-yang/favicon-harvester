@@ -17,6 +17,7 @@ retry:
   retry: 重试
 
 toolbar:
+  rescan: 重新扫描
   # 中文无复数变化，但两支都要写，否则与 en 的 key 结构对不齐
   iconCount:
     1: 1 个图标

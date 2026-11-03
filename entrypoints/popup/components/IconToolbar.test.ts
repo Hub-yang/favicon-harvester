@@ -81,4 +81,20 @@ describe('iconToolbar', () => {
       expect(mountToolbar().get('button [class*="i-lucide-"]').attributes('aria-hidden')).toBe('true')
     })
   })
+  it('重新扫描按钮有名称和提示，点击发出 rescan，ZIP 仍为第一按钮', async () => {
+    const wrapper = mountToolbar()
+    const button = wrapper.get('button[aria-label="重新扫描"]')
+    expect(button.attributes('title')).toBe('重新扫描')
+    expect(wrapper.findAll('button')[0]!.text()).toBe('打包下载 ZIP')
+    await button.trigger('click')
+    expect(wrapper.emitted('rescan')).toHaveLength(1)
+  })
+
+  it('zIP 打包时原生禁用重新扫描按钮', async () => {
+    const wrapper = mountToolbar({ state: 'running' })
+    const button = wrapper.get('button[aria-label="重新扫描"]')
+    expect(button.attributes('disabled')).toBeDefined()
+    await button.trigger('click')
+    expect(wrapper.emitted('rescan')).toBeUndefined()
+  })
 })

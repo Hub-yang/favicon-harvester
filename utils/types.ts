@@ -26,6 +26,8 @@ export interface IconCandidate {
 
 /** background 扫描流程的最终返回结果 */
 export interface ScanResult {
+  /** 页面切换或新请求使本次失效，不计作失败重试 */
+  cancelled?: true
   restricted: boolean
   candidates: IconCandidate[]
 }
