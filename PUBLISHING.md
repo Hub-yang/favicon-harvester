@@ -19,9 +19,9 @@ Chrome 商店「隐私声明」页要求填一个可公开访问的隐私政策 
 
 已扫描页面的地址、图标声明和候选元数据会临时保存在后台内存，最多复用 30 秒，后台终止后丢失。过期后不再复用，在后续缓存操作时清理，不保证到点立即擦除；包含内嵌图片地址的结果不进入此缓存。「重新扫描」与「重试」绕过插件缓存，浏览器自身的 HTTP 缓存仍照常生效。
 
-- 插件仅在你主动点击工具栏图标、按下插件快捷键或在右键菜单中选择「提取此页图标」时读取当前页面，不会在后台持续监听或收集你的浏览数据。
+- 默认由你点击工具栏图标、按下快捷键或选择「提取此页图标」后扫描。你也可以主动授予可选的 HTTP(S) 站点访问权限，让插件在你查看已授权网页时自动扫描并显示数量徽章。可以随时停用，持久存储只保存这个开关。
 - 插件仅读取当前标签页的 URL，以及页面 `<head>` 中与图标相关的公开标签信息（如 `<link rel="icon">`），用于发现该网站的图标资源。
-- 插件会向当前网站自身域名下的图标地址发起请求（获取图标文件与 web manifest），不会将任何信息发送到该网站之外的第三方服务器，不接入任何第三方图标兜底服务。
+- 自动模式只请求当前页面同源的图标资源和 manifest，不携带凭据或 Referer，不跟随重定向。手动模式还会处理网站声明的资源。插件不使用第三方图标兜底服务。
 - 插件不集成任何分析、统计或广告 SDK，不包含任何形式的用户跟踪。
 - 下载到本地的图标文件只保存在你自己的设备上，插件开发者无法访问。
 
@@ -59,9 +59,11 @@ Chrome 商店「隐私声明」页要求填一个可公开访问的隐私政策 
 
 短时间重开同一页面时，可以复用刚才的扫描结果，减少重复等待；需要时点击「重新扫描」即可。
 
+如果你希望打开网页时就看到有多少图标可提取，可以在设置里授权并启用自动扫描。工具栏会显示当前页面已验证的数量，未扫全时会在数字后标上加号。你随时可以停用。
+
 插件的界面跟着浏览器的语言走，简体中文和英文都有，不需要你另外设置。
 
-插件只在你主动打开它时才会碰网页，而且只读取当前这一个标签页，只访问网站自己域名下的图标地址，不使用任何第三方图标服务，也不向开发者或第三方收集、上传你的数据。页面地址与图标元数据仅临时放在后台内存，最多复用 30 秒，不写入插件持久存储，后台终止后丢失。
+自动扫描默认关闭，只有你主动授权后才会运行，自动请求限于当前网页同源。插件不使用第三方图标服务，不向开发者收集或上传扫描数据。页面地址和图标元数据仅临时保存在后台内存，最多复用 30 秒。插件只持久保存自动扫描的开关。
 
 适合需要参考同行网站图标的设计师，以及想拿到某个站点各个尺寸图标的开发者。
 ```
@@ -77,9 +79,11 @@ Chrome 商店「隐私声明」页要求填一个可公开访问的隐私政策 
 | 权限 | 用途说明草稿 |
 |---|---|
 | `activeTab` | 用于在用户主动点击插件图标、按下插件快捷键或在右键菜单中选择「提取此页图标」时读取当前标签页的 URL，作为图标扫描目标页面并计算下载文件名里的域名前缀。不会在后台持续访问任何标签页。 |
-| `scripting` | 用于在用户点击插件图标、按下插件快捷键或在右键菜单中选择「提取此页图标」时，向当前页面注入一个只读脚本，读取页面 `<head>` 中 `<link rel="icon">` 等标签的地址，以发现该网站声明的图标资源。脚本不修改页面内容、不执行页面中的任何代码、不读取图标信息之外的其他数据。 |
+| `scripting` | 手动扫描或在用户启用自动扫描后，向当前页面注入只读脚本，发现页面声明的图标并验证可用性。脚本不修改页面内容，也不读取图标信息之外的数据。 |
 | `downloads` | 用于把用户在插件面板里选中的图标文件保存到本地下载目录，这是插件的核心功能（下载图标）。用户选择打包下载时，插件在本地把这些图标压缩成一个 ZIP，同样通过该权限保存到下载目录，全过程不经过任何服务器。 |
 | `contextMenus` | 用于在网页空白处的右键菜单里添加一项「提取此页图标」，用户选择后打开插件面板，效果与点击工具栏上的插件图标相同。插件不读取右键位置的元素、选中的文字或链接，用户没有选择该菜单项时也不会访问页面。 |
+| `storage` | 仅在本机保存用户是否启用自动扫描。不保存站点地址、扫描记录或图标。 |
+| HTTP(S) 可选站点访问 | 用户在设置页主动启用自动扫描时才请求。用于读取正在浏览的已授权页面并显示数量徽章，默认关闭。自动请求限当前页面同源。 |
 
 **数据使用声明**（Privacy practices 标签页会问"是否收集用户数据"，逐项勾选）：
 
@@ -112,9 +116,11 @@ Save the ones you need one at a time, or bundle them all into a single ZIP that 
 
 Reopen the same page shortly afterwards to reuse the recent scan, or choose Rescan when needed.
 
+If you want to see how many icons a page offers as you browse, you can grant access and turn on automatic scanning in Settings. The toolbar shows how many icons were verified and adds a plus sign when the scan was partial. You can turn this off at any time.
+
 The interface follows your browser's language and is available in English and Simplified Chinese, with nothing to set up.
 
-The extension touches a page only when you open it yourself, reads only the current tab, and only requests addresses on the site's own domain. It uses no third-party icon service and does not collect or upload your data to the developer or third parties. Page addresses and icon metadata stay temporarily in background memory for reuse for up to 30 seconds, never in persistent extension storage; they are lost when the worker stops.
+Automatic scanning is off by default and runs only after you grant site access. Its requests stay within the current page's origin. The extension uses no third-party icon service and sends no scan data to the developer. Page addresses and icon metadata stay in background memory for reuse for up to 30 seconds. Only your automatic scanning setting is saved in persistent extension storage.
 
 Useful for designers looking at how other sites handle their icons, and for developers who need every size a site provides.
 ```
@@ -141,7 +147,7 @@ Useful for designers looking at how other sites handle their icons, and for deve
 4. 进入「Store listing」标签页，填入 1.2 节的应用名称/描述/分类/语言，上传 1.3 节的截图。
 5. 进入「Privacy practices」标签页：
    - 填入 1.2 节的单一用途说明。
-   - 四个权限（`activeTab`/`scripting`/`downloads`/`contextMenus`）分别粘贴对应的用途说明。
+   - 按 1.2 节填写 manifest 中各权限的用途，包括 `storage` 与 HTTP(S) 可选站点访问。
    - 数据使用声明按 1.2 节逐项勾选。
    - 填入 1.1 节生成的 Gist 隐私政策 URL。
 6. 进入「Distribution」标签页：
@@ -213,7 +219,7 @@ git push origin :refs/tags/v<版本号>  # 删远端标签
 | v0.3.2 | 修复两处扫描缺陷：`rel` 写成多个值的图标标签（如 `alternate icon`）原来会被漏掉，现在能识别；多帧 ICO 的卡片原来只显示一个尺寸，现在列出它包含的全部尺寸。本版同时带上 v0.3.1 的视觉调整（按钮图标、卡片按钮单行） | 详细描述**无需改动**（「head 里的图标标签」本就涵盖多值 `rel`），权限没有增减，Privacy practices **无需改动**。⚠️ **截图必须重截**（v0.3.1 起界面已变）。英文 listing（FH-21）与本版同一次提交 |
 | v0.3.3 | 修复一处复制缺陷：多帧 ICO 复制成 `<link>` 标签时，`sizes` 原来只写最大的那一帧（如 `48x48`），现在写全它包含的每一帧（如 `16x16 32x32 48x48`）。界面没有变化 | 详细描述**无需改动**，权限没有增减，Privacy practices **无需改动**，截图**无需重截**。等 v0.3.2 审核结束后再上传本版 |
 | v0.4.0 | 新增两种打开面板的方式：快捷键 `Alt+Shift+F`（Mac 上是 `Option+Shift+F`，可在 `chrome://extensions/shortcuts` 改），以及页面空白处右键菜单里的「提取此页图标」。面板和扫描结果与点图标时完全一样。新功能，版本号选 **minor** | **Store listing 的详细描述必须更新**：中文与 English 两个语言各粘贴一次，1.2 节已改好，直接抄；名称与简短描述来自 manifest，**无需改动**。**新增 `contextMenus` 权限**，安装与更新时都没有权限警告，已装用户不会被停用。Privacy practices 要改三处：新增的 `contextMenus` 文本框填用途说明；`activeTab`、`scripting` 两段换成新写法（都按 1.2 节权限表直接抄）；单一用途说明与数据使用声明**无需改动**。⚠️ **公开 Gist 上的隐私政策要按 1.1 节同步**（只改了第一条）。截图**无需重截**（面板界面没变） |
-| v0.5.0（待发布） | 同页手动扫描结果最多复用 30 秒，新增重新扫描，重试绕过插件缓存；不新增权限、不落盘，后台重启可提前丢失 | 发布前将中英详细描述按 1.2 同步，并按 1.1 更新公开 Gist 隐私政策；复核 Privacy practices 与实际临时内存处理一致。四权限用途、名称和简短描述无需改动；面板新增按钮，截图需复核。此处仅准备发布说明，尚未更新在线政策或提交商店 |
+| v0.5.0（待发布） | 设置页可启用自动扫描和数量徽章，默认关闭。完整结果可短期复用，仍可主动重新扫描 | 更新中英详细描述和公开 Gist 隐私政策。按 1.2 复核 `scripting`、`storage`、HTTP(S) 可选站点访问及数据使用声明。截图复核新设置入口和徽章。名称与简短描述沿用现有值 |
 
 ---
 
@@ -229,7 +235,7 @@ Chrome 审核团队打回后会在开发者控制台和邮件里给出理由。�
 | Deceptive or inaccurate metadata / 元数据不准确 | 核对应用名称、描述、截图是否和插件实际行为一致，不要用夸大或无关的关键词堆砌描述吸引搜索 |
 | Spam and Placement in the Store / 垃圾内容和商店中的排名（违规参考 ID 形如 `Yellow Argon`）、「产品说明中有过多关键字」 | 商店描述按三条原则重写：①不写脱离句子的枚举列表，尤其是文件格式、扩展名、同义词串；②不用 `A / B / C` 斜杠罗列，也不用 `·` 起头的关键词式条目，改成完整段落句子；③同一个技术名词全篇最多提一次。改完只在 Store listing 标签页更新文字并重新提交，包和版本号都不用动。**2026-08-01 首次提交就是栽在描述里的 `PNG/SVG/ICO/JPEG/GIF/WEBP` 这一串格式枚举上** |
 | Uses remote code / 使用远程代码 | 本项目已在代码 review 阶段确认无 `eval`/动态执行远程内容，正常不会触发；如果收到这条，检查是否误引入了新依赖动态加载脚本 |
-| Requesting permissions not used / 声明了未使用的权限 | 核对 `wxt.config.ts` 里的 `permissions` 是否和代码里实际调用的 API 一致（当前只有 `activeTab`/`scripting`/`downloads`/`contextMenus`，均有对应代码路径使用） |
+| Requesting permissions not used / 声明了未使用的权限 | 核对 [WXT 配置](./wxt.config.ts) 中的必需与可选权限是否各有现役调用，并与 1.2 节的用途一致 |
 
 排查修复后，回到开发者控制台对应标签页更新内容，重新提交即可，不需要新建项目。
 

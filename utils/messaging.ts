@@ -2,6 +2,8 @@ import type { DownloadResult, IconBytesResult, IconCandidate, ScanResult, ZipDow
 import { defineExtensionMessaging } from '@webext-core/messaging'
 
 interface ProtocolMap {
+  pauseAutoScan: () => void
+  reportBadgeCount: (data: { scanId: string, count: number }) => void
   scanIcons: (data: { tabId: number, force?: boolean }) => ScanResult
   downloadIcon: (data: { url: string, filename: string }) => DownloadResult
   fetchIconBytes: (data: { url: string }) => IconBytesResult

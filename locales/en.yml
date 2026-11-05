@@ -16,6 +16,20 @@ retry:
   retrying: Retrying…
   retry: Retry
 
+autoScan:
+  title: Automatic scanning and icon count
+  description: After you grant access, the extension scans the page you are viewing and shows an icon count. Only your preference is saved locally. You can turn it off at any time.
+  toolbarHint: Pin the extension to the Chrome toolbar to see its count next to the address bar.
+  settings: Automatic scan settings
+  enable: Grant access and enable
+  disable: Turn off automatic scanning
+  later: Later
+  denied: Site access was not granted. You can still scan manually.
+  saveFailed: Could not read or save the setting. Reopen this page and try again.
+  revokeFailed: Automatic scanning is off, but site access could not be removed. You can change site access in Chrome's extension settings.
+  noSiteAccess: Chrome has not granted access to any sites. Grant access again to resume automatic scanning.
+  partialBadge: At least $1 icons verified. Open the panel for the full results.
+
 toolbar:
   rescan: Rescan
   iconCount:

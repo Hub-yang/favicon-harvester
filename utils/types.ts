@@ -26,6 +26,7 @@ export interface IconCandidate {
 
 /** background 扫描流程的最终返回结果 */
 export interface ScanResult {
+  badgeScanId?: string
   /** 页面切换或新请求使本次失效，不计作失败重试 */
   cancelled?: true
   restricted: boolean
@@ -49,6 +50,7 @@ export interface IconBytesResult {
 
 /** scan-dom-icons.ts 注入脚本的返回值 */
 export interface DomScanResult {
+  pageUrl?: string
   icons: {
     /** 取 <link>.href，浏览器已解析为绝对地址 */
     href: string

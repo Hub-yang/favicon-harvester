@@ -42,4 +42,4 @@ export function scanDomIcons(doc: Document): DomScanResult {
   return { icons, manifestHref }
 }
 
-export default defineUnlistedScript(() => scanDomIcons(document))
+export default defineUnlistedScript(() => ({ ...scanDomIcons(document), pageUrl: document.URL }))

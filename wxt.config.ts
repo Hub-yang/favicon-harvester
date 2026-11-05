@@ -1,4 +1,5 @@
 import { defineConfig } from 'wxt'
+import { AUTO_SCAN_HOST_PATTERNS } from './utils/auto-scan-settings'
 
 // See https://wxt.dev/api/config.html
 export default defineConfig({
@@ -8,7 +9,8 @@ export default defineConfig({
     default_locale: 'zh_CN',
     name: '__MSG_extName__',
     description: '__MSG_extDescription__',
-    permissions: ['activeTab', 'scripting', 'downloads', 'contextMenus'],
+    permissions: ['activeTab', 'scripting', 'downloads', 'contextMenus', 'storage'],
+    optional_host_permissions: [...AUTO_SCAN_HOST_PATTERNS],
     // _execute_action 不派发 commands.onCommand，按键直接打开面板，background 不用写代码
     commands: {
       _execute_action: {

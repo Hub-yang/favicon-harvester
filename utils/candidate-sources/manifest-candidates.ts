@@ -24,28 +24,31 @@ export async function fetchManifestCandidates(manifestHref: string): Promise<Ico
     if (!response.ok)
       return []
 
-    const manifest = await response.json() as WebManifest
-    if (!Array.isArray(manifest.icons))
-      return []
-
-    const candidates: IconCandidate[] = []
-    for (const icon of manifest.icons) {
-      if (!isWebManifestIcon(icon) || typeof icon.src !== 'string' || !icon.src)
-        continue
-
-      const size = typeof icon.sizes === 'string' ? parseSizesAttribute(icon.sizes) : undefined
-      candidates.push({
-        url: new URL(icon.src, manifestHref).toString(),
-        source: 'manifest',
-        sourceDetail: typeof icon.purpose === 'string' ? icon.purpose : undefined,
-        width: size?.width,
-        height: size?.height,
-      })
-    }
-
-    return candidates
+    return parseManifestCandidates(await response.json(), manifestHref)
   }
   catch {
     return []
   }
+}
+
+export function parseManifestCandidates(value: unknown, manifestHref: string): IconCandidate[] {
+  const manifest = value as WebManifest | null
+  if (!Array.isArray(manifest?.icons))
+    return []
+
+  const candidates: IconCandidate[] = []
+  for (const icon of manifest.icons) {
+    if (!isWebManifestIcon(icon) || typeof icon.src !== 'string' || !icon.src)
+      continue
+
+    const size = typeof icon.sizes === 'string' ? parseSizesAttribute(icon.sizes) : undefined
+    candidates.push({
+      url: new URL(icon.src, manifestHref).toString(),
+      source: 'manifest',
+      sourceDetail: typeof icon.purpose === 'string' ? icon.purpose : undefined,
+      width: size?.width,
+      height: size?.height,
+    })
+  }
+  return candidates
 }

@@ -16,13 +16,20 @@ export function useIconScan() {
   const retryCount = ref(0)
   let active = true
   let sequence = 0
+  let badgeScanId: string | undefined
 
   const exhausted = computed(() => retryCount.value >= MAX_RETRY_COUNT)
   const showRetryPanel = computed(() => !loading.value && candidates.value.length === 0)
 
+  function reportBadgeCount() {
+    if (badgeScanId)
+      void sendMessage('reportBadgeCount', { scanId: badgeScanId, count: candidates.value.length }).catch(() => {})
+  }
+
   async function runScan(mode: 'initial' | 'rescan' | 'retry') {
     const own = ++sequence
     const current = () => active && sequence === own
+    badgeScanId = undefined
     if (mode === 'retry') {
       retrying.value = true
     }
@@ -71,6 +78,8 @@ export function useIconScan() {
       restricted.value = result.restricted
       domain.value = nextDomain
       candidates.value = sortCandidatesBySize(verified.filter((candidate): candidate is IconCandidate => candidate !== undefined))
+      badgeScanId = result.badgeScanId
+      reportBadgeCount()
       completed = true
     }
     catch {
@@ -111,6 +120,7 @@ export function useIconScan() {
 
   function removeCandidate(url: string) {
     candidates.value = candidates.value.filter(candidate => candidate.url !== url)
+    reportBadgeCount()
   }
 
   return { loading, restricted, candidates, domain, retrying, exhausted, showRetryPanel, retry, rescan, removeCandidate }

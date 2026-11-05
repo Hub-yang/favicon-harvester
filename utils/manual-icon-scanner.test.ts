@@ -62,6 +62,35 @@ describe('手动扫描缓存', () => {
     expect(vi.mocked(fakeBrowser.scripting.executeScript).mock.calls.length).toBeGreaterThan(reads)
   })
 
+  it('只复用覆盖完整的同文档自动结果，停用后只清除自动来源', async () => {
+    const scanner = createManualIconScanner()
+    const result = { restricted: false, candidates: [{ url: page.icons[0]!.href, source: 'link' as const }] }
+    const entry = {
+      count: 1,
+      complete: true,
+      documentId: documentId!,
+      url: tab.url!,
+      signature: JSON.stringify([page, tab.favIconUrl]),
+      result,
+    }
+    scanner.rememberAuto(1, { ...entry, complete: false })
+    await scanner.scan(1)
+    expect(request).toHaveBeenCalled()
+
+    scanner.invalidate(1)
+    scanner.rememberAuto(1, entry)
+    await scanner.scan(2)
+    request.mockClear()
+    expect(await scanner.scan(1)).toEqual(result)
+    expect(request).not.toHaveBeenCalled()
+
+    scanner.dropAuto()
+    await scanner.scan(2)
+    expect(request).not.toHaveBeenCalled()
+    await scanner.scan(1)
+    expect(request).toHaveBeenCalled()
+  })
+
   it('29,999 ms 命中不续期，30,000 ms 重扫，负 age 也失效', async () => {
     const scanner = createManualIconScanner()
     await scanner.scan(1)

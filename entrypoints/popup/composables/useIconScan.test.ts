@@ -60,6 +60,21 @@ describe('useIconScan', () => {
     vi.useRealTimers()
   })
 
+  it('回报实际显示数量，包括缩略图后来加载失败', async () => {
+    stubActiveTab(makeTab())
+    const result = { restricted: false, candidates: [CANDIDATE_A, CANDIDATE_B], badgeScanId: 'latest-scan' }
+    vi.mocked(sendMessage).mockResolvedValue(result)
+    vi.mocked(verifyImageLoadable).mockImplementation(async url => url === CANDIDATE_A.url)
+
+    const wrapper = mountScan()
+    await flushPromises()
+    expect(sendMessage).toHaveBeenCalledWith('reportBadgeCount', { scanId: 'latest-scan', count: 1 })
+
+    wrapper.vm.removeCandidate(CANDIDATE_A.url)
+    await flushPromises()
+    expect(sendMessage).toHaveBeenLastCalledWith('reportBadgeCount', { scanId: 'latest-scan', count: 0 })
+  })
+
   it('初次扫描 0 候选：显示重试面板，不计入重试次数', async () => {
     stubActiveTab(makeTab())
     vi.mocked(sendMessage).mockResolvedValue({ restricted: false, candidates: [] } as Awaited<ReturnType<typeof sendMessage>>)

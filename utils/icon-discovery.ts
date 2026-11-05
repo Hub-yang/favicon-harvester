@@ -35,14 +35,19 @@ export async function readIconPage(tab: Browser.tabs.Tab): Promise<IconPageSnaps
   }
 }
 
-export async function discoverIcons(tab: Browser.tabs.Tab, page?: IconPageSnapshot): Promise<ScanResult> {
+interface DiscoveryPolicy {
+  manifest: typeof fetchManifestCandidates
+  probe: (candidates: IconCandidate[]) => Promise<(IconCandidate | undefined)[]>
+}
+
+export async function discoverIcons(tab: Browser.tabs.Tab, page?: IconPageSnapshot, policy?: DiscoveryPolicy): Promise<ScanResult> {
   const snapshot = page ?? await readIconPage(tab)
   if (snapshot.restricted || !tab.url)
     return { restricted: true, candidates: buildFallbackCandidates(tab.favIconUrl) }
 
   const scan = snapshot.scan
   const origin = new URL(tab.url).origin
-  const manifestCandidates = scan.manifestHref ? await fetchManifestCandidates(scan.manifestHref) : []
+  const manifestCandidates = scan.manifestHref ? await (policy?.manifest ?? fetchManifestCandidates)(scan.manifestHref) : []
   const tabFavIconCandidate = buildTabFavIconCandidate(tab.favIconUrl)
 
   const orderedCandidates: IconCandidate[] = [
@@ -53,7 +58,7 @@ export async function discoverIcons(tab: Browser.tabs.Tab, page?: IconPageSnapsh
   ]
 
   const deduped = dedupeByAbsoluteUrl(orderedCandidates)
-  const probed = await Promise.all(deduped.map(candidate => probeCandidate(candidate)))
+  const probed = policy ? await policy.probe(deduped) : await Promise.all(deduped.map(candidate => probeCandidate(candidate)))
   const candidates = probed.filter((candidate): candidate is IconCandidate => candidate !== undefined)
 
   return { restricted: false, candidates }

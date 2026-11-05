@@ -16,6 +16,20 @@ retry:
   retrying: 重试中…
   retry: 重试
 
+autoScan:
+  title: 自动扫描和数量徽章
+  description: 授权后，扩展会自动扫描正在浏览的网页并显示图标数量。它只在本机保存开关，你可以随时停用。
+  toolbarHint: 将扩展固定到 Chrome 工具栏，就能在地址栏旁看到数量徽章。
+  settings: 自动扫描设置
+  enable: 授权并启用
+  disable: 停用自动扫描
+  later: 稍后
+  denied: 未获得站点访问权限，仍可手动扫描。
+  saveFailed: 无法读取或保存设置。请重新打开设置页再试。
+  revokeFailed: 自动扫描已停用，但未能撤回站点权限。可在 Chrome 扩展管理中调整站点访问。
+  noSiteAccess: Chrome 当前未授权任何站点。重新授权后才能自动扫描。
+  partialBadge: 至少验证了 $1 个图标，打开面板查看完整结果。
+
 toolbar:
   rescan: 重新扫描
   # 中文无复数变化，但两支都要写，否则与 en 的 key 结构对不齐

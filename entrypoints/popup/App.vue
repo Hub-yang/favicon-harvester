@@ -15,6 +15,15 @@ function rescanIfIdle() {
     void rescan()
 }
 
+async function openAutoScanSettings() {
+  try {
+    await browser.runtime.openOptionsPage()
+  }
+  catch {
+    // 设置也可从 Chrome 扩展管理打开。
+  }
+}
+
 const appVersion = browser.runtime.getManifest().version
 </script>
 
@@ -25,7 +34,18 @@ const appVersion = browser.runtime.getManifest().version
         <span class="font-semibold">{{ i18n.t('app.title') }}</span>
         <span class="text-[11px] text-[var(--fh-muted)]">v{{ appVersion }}</span>
       </div>
-      <span class="text-[11px] text-[var(--fh-muted)]">by HuberyYang</span>
+      <div class="flex items-center gap-2">
+        <span class="text-[11px] text-[var(--fh-muted)]">by HuberyYang</span>
+        <button
+          type="button"
+          class="inline-flex rounded p-1 hover:bg-[var(--fh-border)]"
+          :aria-label="i18n.t('autoScan.settings')"
+          :title="i18n.t('autoScan.settings')"
+          @click="openAutoScanSettings"
+        >
+          <span class="i-lucide-settings size-3.5" aria-hidden="true" />
+        </button>
+      </div>
     </header>
 
     <StatusBanner v-if="loading || restricted" :state="loading ? 'loading' : 'restricted'" />

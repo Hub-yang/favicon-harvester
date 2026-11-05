@@ -63,6 +63,18 @@ describe('app', () => {
     expect(wrapper.find('header').text()).toContain('v0.1.0')
   })
 
+  it('可以从面板进入自动扫描设置，不改变手动扫描入口', async () => {
+    stubActiveTab(makeTab())
+    vi.mocked(sendMessage).mockReturnValue(new Promise(() => {}) as ReturnType<typeof sendMessage>)
+    const openOptions = vi.spyOn(fakeBrowser.runtime, 'openOptionsPage').mockResolvedValue()
+    const wrapper = mount(App)
+
+    await wrapper.get('button[aria-label="自动扫描设置"]').trigger('click')
+
+    expect(openOptions).toHaveBeenCalledTimes(1)
+    expect(sendMessage).toHaveBeenCalledWith('scanIcons', { tabId: 1 })
+  })
+
   it('挂载后、扫描返回前处于 loading 态', () => {
     stubActiveTab(makeTab())
     vi.mocked(sendMessage).mockReturnValue(new Promise(() => {}) as ReturnType<typeof sendMessage>)

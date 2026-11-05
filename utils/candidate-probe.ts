@@ -13,22 +13,32 @@ export async function probeCandidate(candidate: IconCandidate, timeoutMs = 5000)
       return undefined
 
     const bytes = new Uint8Array(await response.arrayBuffer())
+    return (await inspectCandidateBytes(candidate, bytes, response.headers.get('content-type') ?? ''))?.candidate
+  }
+  catch {
+    return undefined
+  }
+}
 
-    const headerMime = response.headers.get('content-type')?.split(';')[0]?.trim().toLowerCase()
-    const mimeType = headerMime && headerMime !== 'application/octet-stream'
-      ? headerMime
-      : sniffMimeFromBytes(bytes)
-    if (!mimeType)
-      return undefined
+export async function inspectCandidateBytes(candidate: IconCandidate, bytes: Uint8Array<ArrayBuffer>, contentType: string) {
+  const headerMime = contentType.split(';')[0]?.trim().toLowerCase()
+  const mimeType = headerMime && headerMime !== 'application/octet-stream'
+    ? headerMime
+    : sniffMimeFromBytes(bytes)
+  if (!mimeType)
+    return undefined
 
-    const measured = mimeType === 'image/svg+xml'
-      ? parseSvgSize(new TextDecoder().decode(bytes))
-      : await measureRasterSize(new Blob([bytes], { type: mimeType }))
+  const svg = mimeType === 'image/svg+xml'
+  const measured = svg
+    ? parseSvgSize(new TextDecoder().decode(bytes))
+    : await measureRasterSize(new Blob([bytes], { type: mimeType }))
 
-    // 与格式标签同源判定：服务器回 image/ico 这类非标准头时，卡片照样写着 ICO，帧尺寸也不能缺
-    const frameSizes = resolveIconExtension({ ...candidate, mimeType }) === 'ico' ? parseIcoFrameSizes(bytes) : undefined
+  // 与格式标签同源判定：服务器回 image/ico 这类非标准头时，卡片照样写着 ICO，帧尺寸也不能缺
+  const frameSizes = resolveIconExtension({ ...candidate, mimeType }) === 'ico' ? parseIcoFrameSizes(bytes) : undefined
 
-    return {
+  return {
+    rasterDecoded: !svg && !!measured,
+    candidate: {
       ...candidate,
       mimeType,
       byteLength: bytes.length,
@@ -36,9 +46,6 @@ export async function probeCandidate(candidate: IconCandidate, timeoutMs = 5000)
       height: measured?.height ?? candidate.height,
       // 只有一种尺寸时卡片第一行已经写全了，不带字段，避免重复展示
       ...(frameSizes && frameSizes.length > 1 && { frameSizes }),
-    }
-  }
-  catch {
-    return undefined
+    },
   }
 }

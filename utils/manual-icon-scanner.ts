@@ -1,3 +1,4 @@
+import type { AutoIconScanResult } from './auto-icon-scanner'
 import type { IconPageSnapshot } from './icon-discovery'
 import type { ScanResult } from './types'
 import { discoverIcons, readIconPage } from './icon-discovery'
@@ -9,6 +10,7 @@ interface CacheEntry {
   signature: string
   completedAt: number
   result: ScanResult
+  automatic?: true
 }
 
 function signature(tab: Browser.tabs.Tab, page: IconPageSnapshot): string {
@@ -44,7 +46,39 @@ export function createManualIconScanner() {
     owners.delete(tabId)
   }
 
-  async function scan(tabId: number, force = false): Promise<ScanResult> {
+  function remember(entry: CacheEntry) {
+    if (new TextEncoder().encode(JSON.stringify(entry)).byteLength > 262_144)
+      return
+    sweep()
+    cache.set(entry.tabId, entry)
+    if (cache.size > 20)
+      cache.delete(cache.keys().next().value!)
+  }
+
+  function rememberAuto(tabId: number, data: AutoIconScanResult) {
+    sweep()
+    const prior = cache.get(tabId)
+    if (!data.complete || data.result.restricted || !data.result.candidates.length || owners.has(tabId) || (prior && !prior.automatic))
+      return
+    remember({
+      tabId,
+      url: data.url,
+      documentId: data.documentId,
+      signature: data.signature,
+      completedAt: Date.now(),
+      result: data.result,
+      automatic: true,
+    })
+  }
+
+  function dropAuto() {
+    for (const [tabId, entry] of cache) {
+      if (entry.automatic)
+        cache.delete(tabId)
+    }
+  }
+
+  async function scan(tabId: number, force = false, onIdentity?: (identity: { url: string, documentId: string }) => void): Promise<ScanResult> {
     sweep()
     if (force)
       cache.delete(tabId)
@@ -64,6 +98,7 @@ export function createManualIconScanner() {
       const entry = cache.get(tabId)
       if (!force && !page.restricted && page.documentId && entry
         && entry.documentId === page.documentId && entry.url === tab.url && entry.signature === key) {
+        onIdentity?.({ url: entry.url, documentId: entry.documentId })
         return entry.result
       }
       cache.delete(tabId)
@@ -89,24 +124,20 @@ export function createManualIconScanner() {
         || (!latest.restricted && page.documentId && latest.documentId && page.documentId !== latest.documentId)) {
         return cancelled()
       }
+      if (tab.url && page.documentId && !latest.restricted && latest.documentId === page.documentId)
+        onIdentity?.({ url: tab.url, documentId: page.documentId })
 
       if (!result.restricted && result.candidates.length && page.documentId
         && !latest.restricted && latest.documentId === page.documentId
         && signature(finalTab, latest) === key && hasNetworkUrls(tab, page, result)) {
-        const next: CacheEntry = {
+        remember({
           tabId,
           url: tab.url!,
           documentId: page.documentId,
           signature: key,
           completedAt: Date.now(),
           result,
-        }
-        if (new TextEncoder().encode(JSON.stringify(next)).byteLength <= 262_144) {
-          sweep()
-          cache.set(tabId, next)
-          if (cache.size > 20)
-            cache.delete(cache.keys().next().value!)
-        }
+        })
       }
       return result
     }
@@ -121,5 +152,5 @@ export function createManualIconScanner() {
     }
   }
 
-  return { scan, invalidate }
+  return { scan, invalidate, rememberAuto, dropAuto }
 }

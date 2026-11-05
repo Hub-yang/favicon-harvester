@@ -1,5 +1,5 @@
 import type { IconCandidate, ScanResult } from '@/utils/types'
-import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 import { fakeBrowser } from 'wxt/testing/fake-browser'
 import { downloadIconFile } from '@/utils/downloads'
 import { fetchIconBytes } from '@/utils/icon-bytes'
@@ -7,7 +7,7 @@ import { buildIconZipDataUrl } from '@/utils/icon-zip'
 import { sendMessage } from '@/utils/messaging'
 import background from './index'
 
-const scanner = vi.hoisted(() => ({ scan: vi.fn(), invalidate: vi.fn() }))
+const scanner = vi.hoisted(() => ({ scan: vi.fn(), invalidate: vi.fn(), rememberAuto: vi.fn(), dropAuto: vi.fn() }))
 vi.mock('@/utils/manual-icon-scanner', () => ({ createManualIconScanner: () => scanner }))
 vi.mock('@/utils/downloads', () => ({ downloadIconFile: vi.fn() }))
 vi.mock('@/utils/icon-bytes', () => ({ fetchIconBytes: vi.fn() }))
@@ -47,6 +47,7 @@ function menuClick(menuItemId: string): Parameters<MenuClickListener>[0] {
 describe('background message handlers', () => {
   // main() 只注册一次消息监听；fakeBrowser 不 reset，避免清掉 messaging 的根监听导致往返失效
   beforeAll(() => {
+    vi.spyOn(fakeBrowser.permissions.onRemoved, 'addListener').mockImplementation(() => {})
     vi.spyOn(fakeBrowser.contextMenus.onClicked, 'addListener').mockImplementation((listener) => {
       onMenuClicked = listener
     })
@@ -63,18 +64,35 @@ describe('background message handlers', () => {
     menuListenerRegisteredOnMain = onMenuClicked !== undefined
   })
 
+  beforeEach(() => {
+    vi.spyOn(fakeBrowser.runtime, 'sendMessage').mockImplementation(async message =>
+      (await fakeBrowser.runtime.onMessage.trigger(message, { url: fakeBrowser.runtime.getURL('/popup.html') })).find(Boolean))
+  })
+
   afterEach(() => {
     vi.restoreAllMocks()
     vi.clearAllMocks()
+  })
+
+  it('只在首次安装打开自动扫描引导，更新时不打断手动使用', async () => {
+    vi.spyOn(fakeBrowser.contextMenus, 'create').mockReturnValue('scan-page')
+    const openOptions = vi.spyOn(fakeBrowser.runtime, 'openOptionsPage').mockResolvedValue()
+
+    await fakeBrowser.runtime.onInstalled.trigger({ reason: 'update', previousVersion: '0.4.0', temporary: false })
+    await fakeBrowser.runtime.onInstalled.trigger({ reason: 'browser_update', temporary: false })
+    expect(openOptions).not.toHaveBeenCalled()
+
+    await fakeBrowser.runtime.onInstalled.trigger({ reason: 'install', temporary: false })
+    expect(openOptions).toHaveBeenCalledTimes(1)
   })
 
   it('scanIcons：普通请求可复用，force 显式传给扫描器并保留取消语义', async () => {
     const scanResult: ScanResult = { restricted: false, candidates: [], cancelled: true }
     scanner.scan.mockResolvedValue(scanResult)
     expect(await sendMessage('scanIcons', { tabId: 1 })).toEqual(scanResult)
-    expect(scanner.scan).toHaveBeenLastCalledWith(1, undefined)
+    expect(scanner.scan).toHaveBeenLastCalledWith(1, undefined, expect.any(Function))
     expect(await sendMessage('scanIcons', { tabId: 1, force: true })).toEqual(scanResult)
-    expect(scanner.scan).toHaveBeenLastCalledWith(1, true)
+    expect(scanner.scan).toHaveBeenLastCalledWith(1, true, expect.any(Function))
   })
 
   it('loading、URL、关闭和替换使缓存失效，favicon 更新不取消扫描', () => {
@@ -107,6 +125,16 @@ describe('background message handlers', () => {
 
     expect(fetchIconBytes).toHaveBeenCalledWith('https://example.com/a.png')
     expect(result).toEqual({ success: true, base64: 'AAEC', mimeType: 'image/png' })
+  })
+
+  it('拒绝网页上下文利用已授权的后台抓取图标字节', async () => {
+    await fakeBrowser.runtime.onMessage.trigger({
+      id: 123,
+      type: 'fetchIconBytes',
+      data: { url: 'https://example.com/private' },
+      timestamp: 1,
+    }, { url: 'https://untrusted.test/' })
+    expect(fetchIconBytes).not.toHaveBeenCalled()
   })
 
   it('downloadIconsZip：打包成功后按 buildZipFilename 的路径下载 data URL', async () => {
