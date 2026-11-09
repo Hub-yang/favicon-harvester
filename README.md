@@ -38,6 +38,10 @@
 
 ## 📦 安装
 
+### 从 Chrome 网上应用店安装
+
+打开[图标提取器的商店页面](https://chromewebstore.google.com/detail/bejmkbjkhhdoimpilmolnlckhnoihpjp?hl=zh-CN)，点击「添加至 Chrome」。
+
 ### 从 Release 装
 
 1. 到 [Releases](https://github.com/Hub-yang/favicon-harvester/releases) 下载最新的 `favicon-harvester-x.y.z-chrome.zip` 并解压。

@@ -38,6 +38,10 @@ This extension collapses all of that into one click.
 
 ## 📦 Install
 
+### From the Chrome Web Store
+
+Open [Favicon Harvester in the Chrome Web Store](https://chromewebstore.google.com/detail/bejmkbjkhhdoimpilmolnlckhnoihpjp?hl=en) and select **Add to Chrome**.
+
 ### From a release
 
 1. Grab the latest `favicon-harvester-x.y.z-chrome.zip` from [Releases](https://github.com/Hub-yang/favicon-harvester/releases) and unzip it.

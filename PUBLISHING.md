@@ -1,8 +1,22 @@
 # 上线操作指南
 
-本文档记录「图标提取器」提交 Chrome 网上应用店审核的完整操作流程，分三部分：**首次提交上架**、**后续版本迭代发布**、**审核被打回怎么办**。前置代码质量/安全/manifest 合规审查已完成（见 git log 中「上线前最后一次 code review」相关提交），本文档只覆盖店铺列表侧的操作。
+本文档记录「图标提取器」在 Chrome 网上应用店的首次上架、版本更新和审核处理流程。隐私政策沿用公开 GitHub Gist，商店默认语言为简体中文，并维护英文列表。
 
-已确认的前提：已有 Chrome Web Store 开发者账号；仓库 `Hub-yang/favicon-harvester` 保持 **private**（不改可见性）；隐私政策改用公开 GitHub Gist 承载；商店列表以中文（zh-CN）为默认语言，英文（en）listing 见 1.2 节末尾。
+## v0.5.0 上架记录
+
+v0.5.0 已通过审核。2026-11-09 核对[商店公开页](https://chromewebstore.google.com/detail/bejmkbjkhhdoimpilmolnlckhnoihpjp?hl=zh-CN)，版本字段为 `0.5.0`。正式包见 [GitHub Release](https://github.com/Hub-yang/favicon-harvester/releases/tag/v0.5.0)。下面保留本次更新现有项目的送审步骤。
+
+1. **更新隐私政策**。打开 [现有公开 Gist](https://gist.github.com/Hub-yang/ad261fe23b78b0c0c72098e927cb70de)，点击 **Edit**，用 [1.1 的完整正文](#11-准备隐私政策页面公开-gist)替换 `PRIVACY.md` 并保存。用退出登录或无痕窗口打开同一 URL，确认能看到「自动扫描」「最多复用 30 秒」和「有限使用要求」。商店继续使用这个 URL。
+2. **上传正式包**。下载 [`favicon-harvester-0.5.0-chrome.zip`](https://github.com/Hub-yang/favicon-harvester/releases/download/v0.5.0/favicon-harvester-0.5.0-chrome.zip)。进入 [Chrome Web Store 开发者控制台](https://chrome.google.com/webstore/devconsole)，打开已发布的「图标提取器」，在 **Package** 里点 **Upload new package**，直接选择 ZIP。确认草稿版本显示 `0.5.0`。如需校验文件，SHA-256 为 `94f44412dd36b7d6603a7d17abf7214c5d74e6cbd23af702fa85c06639c3d2ae`。 [官方更新指南](https://developer.chrome.com/docs/webstore/update)
+3. **保存 Privacy practices**。按 [1.2 的权限表和数据使用声明](#12-商店列表文案可直接抄用的草稿)填写。重点复核 `scripting`、新增的 `storage` 和 HTTP(S) 可选站点访问。若后台提供 **Host permission justification**，粘贴权限表最后一行。远程代码选「否」，隐私政策 URL 指向第 1 步的 Gist。 [官方隐私字段指南](https://developer.chrome.com/docs/webstore/cws-dashboard-privacy)
+4. **保存 Store listing**。分别粘贴 [简体中文](#12-商店列表文案可直接抄用的草稿)和 [English](#英文-listingen)的详细描述，名称与简短描述沿用扩展包自带文案。复核现有截图是否仍符合本版界面。需要替换时，使用 v0.5.0 的实际面板或设置页截图，可展示工具栏徽章，推荐 `1280 × 800`。 [官方列表素材指南](https://developer.chrome.com/docs/webstore/best-listing#screenshots)
+5. **提交审核**。复核草稿版本、两种语言、权限说明和公开隐私政策，处理后台标出的必填项后点击 **Submit for review**。希望审核通过即上架就保留 **Publish automatically**，希望通过后再自行决定上架时间就取消勾选。确认 **Status** 中 v0.5.0 显示 **Pending review** 或「审核中」。 [提交与延后发布](https://developer.chrome.com/docs/webstore/publish#submit_your_item) · [查看审核状态](https://developer.chrome.com/docs/webstore/check-review)
+
+如果 **Test instructions** 中有可填写的审核说明，可使用下面这段。
+
+```text
+Open an HTTP(S) page with site icons and click the extension icon to scan manually. To test automatic scanning, open Settings from the popup, enable automatic scanning, approve the optional site access prompt, and open an authorized page. The toolbar badge shows the number of verified icons. Turn off automatic scanning in Settings to clear the badge and revoke site access. No account is required.
+```
 
 ---
 
@@ -10,25 +24,25 @@
 
 ### 1.1 准备隐私政策页面（公开 Gist）
 
-Chrome 商店「隐私声明」页要求填一个可公开访问的隐私政策 URL。仓库保持 private，所以用一个**公开 Gist**单独承载，文件名 `PRIVACY.md`，内容如下（Gist 具体创建操作是一次性动作，不写在这份长期维护的发版流程文档里）：
+在 **Privacy practices** 的 **Privacy policy URL** 填写[现有公开 Gist](https://gist.github.com/Hub-yang/ad261fe23b78b0c0c72098e927cb70de)的页面地址。更新 `PRIVACY.md` 后继续使用同一个 URL。以下是可直接复制的完整正文。
 
 ```markdown
 # 图标提取器（Favicon Harvester）隐私政策
 
-本插件不向开发者或第三方收集、上传用户数据，不把扫描记录写入插件的持久存储。
+本插件在你的设备上处理当前页面 URL 和与图标相关的网页内容，用于查找、显示和保存图标。插件不向开发者上传或出售这些数据，也不把浏览历史或扫描记录写入持久存储。
 
-已扫描页面的地址、图标声明和候选元数据会临时保存在后台内存，最多复用 30 秒，后台终止后丢失。过期后不再复用，在后续缓存操作时清理，不保证到点立即擦除；包含内嵌图片地址的结果不进入此缓存。「重新扫描」与「重试」绕过插件缓存，浏览器自身的 HTTP 缓存仍照常生效。
+后台会在内存中暂存扫描结果，包括当前页面地址、图标声明和候选元数据。缓存最多复用 30 秒，过期后停止复用并在后续缓存操作时清理。后台终止时内存数据丢失。包含内嵌图片地址的结果不进入此缓存。「重新扫描」与「重试」绕过插件缓存，浏览器自身的 HTTP 缓存仍照常生效。
 
 - 默认由你点击工具栏图标、按下快捷键或选择「提取此页图标」后扫描。你也可以主动授予可选的 HTTP(S) 站点访问权限，让插件在你查看已授权网页时自动扫描并显示数量徽章。可以随时停用，持久存储只保存这个开关。
-- 插件仅读取当前标签页的 URL，以及页面 `<head>` 中与图标相关的公开标签信息（如 `<link rel="icon">`），用于发现该网站的图标资源。
+- 插件读取当前标签页的 URL 和 favicon 地址，并处理页面 `<head>` 中与图标有关的声明、网站的 Web App Manifest 和图标文件。用于核对页面与徽章是否对应的临时状态保存在后台内存。
 - 自动模式只请求当前页面同源的图标资源和 manifest，不携带凭据或 Referer，不跟随重定向。手动模式还会处理网站声明的资源。插件不使用第三方图标兜底服务。
 - 插件不集成任何分析、统计或广告 SDK，不包含任何形式的用户跟踪。
 - 下载到本地的图标文件只保存在你自己的设备上，插件开发者无法访问。
 
+本插件对上述数据的使用遵守 [Chrome 网上应用店用户数据政策的有限使用要求](https://developer.chrome.com/docs/webstore/program-policies/limited-use)。
+
 如有疑问，请通过 `18830279823@163.com` 联系。
 ```
-
-创建时**必须选择 public gist**（不能是 secret gist，否则审核方可能判定链接不可公开访问）。创建后得到的 Gist URL 就是 1.4 节步骤 5 要填的隐私政策 URL。
 
 ### 1.2 商店列表文案（可直接抄用的草稿）
 
@@ -63,7 +77,7 @@ Chrome 商店「隐私声明」页要求填一个可公开访问的隐私政策 
 
 插件的界面跟着浏览器的语言走，简体中文和英文都有，不需要你另外设置。
 
-自动扫描默认关闭，只有你主动授权后才会运行，自动请求限于当前网页同源。插件不使用第三方图标服务，不向开发者收集或上传扫描数据。页面地址和图标元数据仅临时保存在后台内存，最多复用 30 秒。插件只持久保存自动扫描的开关。
+自动扫描默认关闭，只有你主动授权后才会运行，自动请求限于当前网页同源。插件不使用第三方图标服务。扫描数据在设备上处理，不会回传给开发者。页面地址和图标元数据仅临时保存在后台内存，最多复用 30 秒。插件只持久保存自动扫描的开关。
 
 适合需要参考同行网站图标的设计师，以及想拿到某个站点各个尺寸图标的开发者。
 ```
@@ -78,17 +92,19 @@ Chrome 商店「隐私声明」页要求填一个可公开访问的隐私政策 
 
 | 权限 | 用途说明草稿 |
 |---|---|
-| `activeTab` | 用于在用户主动点击插件图标、按下插件快捷键或在右键菜单中选择「提取此页图标」时读取当前标签页的 URL，作为图标扫描目标页面并计算下载文件名里的域名前缀。不会在后台持续访问任何标签页。 |
-| `scripting` | 手动扫描或在用户启用自动扫描后，向当前页面注入只读脚本，发现页面声明的图标并验证可用性。脚本不修改页面内容，也不读取图标信息之外的数据。 |
-| `downloads` | 用于把用户在插件面板里选中的图标文件保存到本地下载目录，这是插件的核心功能（下载图标）。用户选择打包下载时，插件在本地把这些图标压缩成一个 ZIP，同样通过该权限保存到下载目录，全过程不经过任何服务器。 |
-| `contextMenus` | 用于在网页空白处的右键菜单里添加一项「提取此页图标」，用户选择后打开插件面板，效果与点击工具栏上的插件图标相同。插件不读取右键位置的元素、选中的文字或链接，用户没有选择该菜单项时也不会访问页面。 |
+| `activeTab` | 用于用户主动点击插件图标、按下快捷键或选择「提取此页图标」时，临时访问当前标签页，读取 URL 以确定手动扫描目标和下载文件名中的域名。 |
+| `scripting` | 手动扫描时使用临时访问权限，自动扫描时仅访问已授权的当前网页。两种模式均使用随扩展打包的脚本读取当前页图标声明，自动扫描还会在页面隔离环境中验证 SVG。脚本不修改页面内容。 |
+| `downloads` | 用于将用户选择的图标保存到本地下载目录。打包下载时，扩展从对应资源地址取得图标，在本机生成 ZIP，再用该权限保存文件。 |
+| `contextMenus` | 用于在网页空白处添加「提取此页图标」菜单项，用户选择后打开插件面板。该入口不读取右键位置的元素、选中的文字或链接。 |
 | `storage` | 仅在本机保存用户是否启用自动扫描。不保存站点地址、扫描记录或图标。 |
-| HTTP(S) 可选站点访问 | 用户在设置页主动启用自动扫描时才请求。用于读取正在浏览的已授权页面并显示数量徽章，默认关闭。自动请求限当前页面同源。 |
+| HTTP(S) 可选站点访问 | 自动扫描默认关闭。用户在设置页主动启用时，才请求 HTTP 和 HTTPS 的可选站点访问。授权用于在用户打开已授权网页时读取当前页图标声明并显示数量徽章，无需每次点击扩展。后台自动请求只访问当前网页同源的图标和 manifest，用户可随时停用。 |
 
-**数据使用声明**（Privacy practices 标签页会问"是否收集用户数据"，逐项勾选）：
+**远程代码（Remote code）** 选「否」。扩展执行的是 ZIP 内打包的代码，网站图标和 manifest 作为资源数据读取。
 
-- 是否收集个人信息 / 财务信息 / 健康信息 / 认证信息 / 个人通讯 / 位置 / 网页浏览记录 / 用户活动 / 网站内容：**全部选"否"**。
-- "我没有出售或转让用户数据给第三方"、"我没有将用户数据用于与其核心功能无关的用途"、"我没有将用户数据用于确定信用资格或放贷"：**全部勾选确认**。
+**数据使用声明（Data usage）** 按本机处理范围填写。
+
+- 勾选 **Web history（网页浏览记录）** 和 **Website content（网站内容）**。这里对应扩展临时读取的当前页 URL，以及图标声明、manifest 和图标文件。扩展不读取浏览器历史库，不记录浏览历史，也不向开发者回传这些数据。其余数据类别按本版行为留空。 [官方用户数据 FAQ](https://developer.chrome.com/docs/webstore/program-policies/user-data-faq)
+- 勾选第二组的三项有限使用确认，包括不出售或转让用户数据、不用于核心功能以外的用途，以及不用于信贷判断。 [官方隐私字段指南](https://developer.chrome.com/docs/webstore/cws-dashboard-privacy#certify_your_data_use_practices)
 
 **分类（Category）**：建议选 "Productivity"（生产力工具）或 "Developer Tools"，二选一，凭你判断哪个更贴近实际使用场景。
 
@@ -98,10 +114,18 @@ Chrome 商店「隐私声明」页要求填一个可公开访问的隐私政策 
 
 Store listing 页顶部的语言下拉框里，选项对应扩展包里的 `_locales/<locale>` 目录，所以要在带 `_locales/en` 的包（v0.3.0 起）上传后才能选 English。各字段的来源：
 
-- **名称**与**简短描述**：取自 manifest，英文版分别读 [`locales/en.yml`](./locales/en.yml) 的 `extName` / `extDescription`，后台不用另填。要改就改那两个字段，然后重新发版。
+- **名称**与**简短描述**取自 manifest。下列文案应与 [`locales/en.yml`](./locales/en.yml) 的 `extName` / `extDescription` 逐字一致。
 - **详细描述**：后台切到 English 后粘贴下面这段。它和中文版逐段对应，同样受本节顶部三条原则约束。
 - **截图**：可以给英文单独上传一组，用英文界面截取。不传就沿用默认语言的截图。
 - **单一用途说明、权限用途说明、数据使用声明**：这几项在 Privacy practices 标签页，不分语言，沿用上面的中文版即可。
+
+**应用名称**：Favicon Harvester
+
+**简短描述（English）**：
+
+```
+Scan the icons a site actually uses, list every unique result, download them one by one or as one ZIP. No third-party services.
+```
 
 **详细描述（English）**：
 
@@ -149,7 +173,7 @@ Useful for designers looking at how other sites handle their icons, and for deve
    - 填入 1.2 节的单一用途说明。
    - 按 1.2 节填写 manifest 中各权限的用途，包括 `storage` 与 HTTP(S) 可选站点访问。
    - 数据使用声明按 1.2 节逐项勾选。
-   - 填入 1.1 节生成的 Gist 隐私政策 URL。
+   - 填入 [1.1 的公开 Gist 地址](#11-准备隐私政策页面公开-gist)。
 6. 进入「Distribution」标签页：
    - 可见性选 **Public**（商店listing 公开，跟代码仓库是否 private 无关）。
    - 地区选「所有地区」或按需勾选。
@@ -197,6 +221,8 @@ Useful for designers looking at how other sites handle their icons, and for deve
 
 9. 点击「提交审核」。更新审核通常比首次提交快。
 
+10. 审核通过后核对商店公开页的版本字段。将发版提交同步回 `dev`，更新发布记录后核对 `dev` 与 `main` 的本地和远端分支。
+
 **门禁失败或标签打错了怎么办**：Release 工作流跑红时不会产生 Release，修完问题后需要把标签删掉重打，否则同名标签推不上去：
 
 ```bash
@@ -219,7 +245,7 @@ git push origin :refs/tags/v<版本号>  # 删远端标签
 | v0.3.2 | 修复两处扫描缺陷：`rel` 写成多个值的图标标签（如 `alternate icon`）原来会被漏掉，现在能识别；多帧 ICO 的卡片原来只显示一个尺寸，现在列出它包含的全部尺寸。本版同时带上 v0.3.1 的视觉调整（按钮图标、卡片按钮单行） | 详细描述**无需改动**（「head 里的图标标签」本就涵盖多值 `rel`），权限没有增减，Privacy practices **无需改动**。⚠️ **截图必须重截**（v0.3.1 起界面已变）。英文 listing（FH-21）与本版同一次提交 |
 | v0.3.3 | 修复一处复制缺陷：多帧 ICO 复制成 `<link>` 标签时，`sizes` 原来只写最大的那一帧（如 `48x48`），现在写全它包含的每一帧（如 `16x16 32x32 48x48`）。界面没有变化 | 详细描述**无需改动**，权限没有增减，Privacy practices **无需改动**，截图**无需重截**。等 v0.3.2 审核结束后再上传本版 |
 | v0.4.0 | 新增两种打开面板的方式：快捷键 `Alt+Shift+F`（Mac 上是 `Option+Shift+F`，可在 `chrome://extensions/shortcuts` 改），以及页面空白处右键菜单里的「提取此页图标」。面板和扫描结果与点图标时完全一样。新功能，版本号选 **minor** | **Store listing 的详细描述必须更新**：中文与 English 两个语言各粘贴一次，1.2 节已改好，直接抄；名称与简短描述来自 manifest，**无需改动**。**新增 `contextMenus` 权限**，安装与更新时都没有权限警告，已装用户不会被停用。Privacy practices 要改三处：新增的 `contextMenus` 文本框填用途说明；`activeTab`、`scripting` 两段换成新写法（都按 1.2 节权限表直接抄）；单一用途说明与数据使用声明**无需改动**。⚠️ **公开 Gist 上的隐私政策要按 1.1 节同步**（只改了第一条）。截图**无需重截**（面板界面没变） |
-| v0.5.0（待发布） | 设置页可启用自动扫描和数量徽章，默认关闭。完整结果可短期复用，仍可主动重新扫描 | 更新中英详细描述和公开 Gist 隐私政策。按 1.2 复核 `scripting`、`storage`、HTTP(S) 可选站点访问及数据使用声明。截图复核新设置入口和徽章。名称与简短描述沿用现有值 |
+| v0.5.0（GitHub 与 Chrome 网上应用店均已发布） | 设置页可启用自动扫描和数量徽章，默认关闭。同页短期复用完整结果，并提供主动重新扫描 | 公开 Gist、权限与数据使用声明、中英文详细描述及截图的送审步骤见[本版上架记录](#v050-上架记录) |
 
 ---
 
