@@ -38,12 +38,12 @@ const appVersion = browser.runtime.getManifest().version
         <span class="text-[11px] text-[var(--fh-muted)]">by HuberyYang</span>
         <button
           type="button"
-          class="inline-flex rounded p-1 hover:bg-[var(--fh-border)]"
+          class="size-7 shrink-0 inline-flex items-center justify-center rounded-md border-0 bg-transparent p-0 text-[var(--fh-muted)] cursor-pointer hover:bg-[var(--fh-settings-hover)] hover:text-[var(--fh-accent-hover)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--fh-accent-hover)]"
           :aria-label="i18n.t('autoScan.settings')"
           :title="i18n.t('autoScan.settings')"
           @click="openAutoScanSettings"
         >
-          <span class="i-lucide-settings size-3.5" aria-hidden="true" />
+          <span class="i-lucide-settings size-4" aria-hidden="true" />
         </button>
       </div>
     </header>

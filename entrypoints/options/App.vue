@@ -141,10 +141,11 @@ onUnmounted(() => {
         v-if="enabled"
         type="button"
         data-action="disable"
-        class="rounded-md border px-4 py-2 disabled:opacity-50"
+        class="inline-flex items-center gap-2 rounded-md border border-solid border-[#b42318] bg-transparent px-4 py-2 text-[#b42318] cursor-pointer enabled:hover:bg-[#fff1f0] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#b42318] disabled:cursor-default disabled:opacity-50"
         :disabled="!ready || busy"
         @click="disable"
       >
+        <span class="i-lucide-power size-4" aria-hidden="true" />
         {{ i18n.t('autoScan.disable') }}
       </button>
       <button

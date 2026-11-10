@@ -18,7 +18,7 @@ retry:
 
 autoScan:
   title: Automatic scanning and icon count
-  description: After you grant access, the extension scans the page you are viewing and shows an icon count. Only your preference is saved locally. You can turn it off at any time.
+  description: After you grant access, the extension automatically scans the current page and shows how many icons are available. It only saves your on/off preference locally, and you can turn it off at any time.
   toolbarHint: Pin the extension to the Chrome toolbar to see its count next to the address bar.
   settings: Automatic scan settings
   enable: Grant access and enable

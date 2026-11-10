@@ -247,6 +247,23 @@ git push origin :refs/tags/v<版本号>  # 删远端标签
 | v0.4.0 | 新增两种打开面板的方式：快捷键 `Alt+Shift+F`（Mac 上是 `Option+Shift+F`，可在 `chrome://extensions/shortcuts` 改），以及页面空白处右键菜单里的「提取此页图标」。面板和扫描结果与点图标时完全一样。新功能，版本号选 **minor** | **Store listing 的详细描述必须更新**：中文与 English 两个语言各粘贴一次，1.2 节已改好，直接抄；名称与简短描述来自 manifest，**无需改动**。**新增 `contextMenus` 权限**，安装与更新时都没有权限警告，已装用户不会被停用。Privacy practices 要改三处：新增的 `contextMenus` 文本框填用途说明；`activeTab`、`scripting` 两段换成新写法（都按 1.2 节权限表直接抄）；单一用途说明与数据使用声明**无需改动**。⚠️ **公开 Gist 上的隐私政策要按 1.1 节同步**（只改了第一条）。截图**无需重截**（面板界面没变） |
 | v0.5.0（GitHub 与 Chrome 网上应用店均已发布） | 设置页可启用自动扫描和数量徽章，默认关闭。同页短期复用完整结果，并提供主动重新扫描 | 公开 Gist、权限与数据使用声明、中英文详细描述及截图的送审步骤见[本版上架记录](#v050-上架记录) |
 
+### v1.0.0 候选
+
+Chrome 首个稳定版。面板设置入口更容易辨认，授权说明更直接，停用按钮增加电源图标和操作反馈。工具栏徽章改为红底，部分扫描用 `N+` 表示已验证数量的下限（FH-35）。本版同时包含 Chrome 升级引导单测修正（FH-32）及原生右键菜单 E2E（FH-33）。Firefox 另行适配。
+
+送审时在现有商店项目上传已核验的 `favicon-harvester-1.0.0-chrome.zip`，分别更新中英文的面板和设置页截图。沿用 1.2 节中英文列表文案、Privacy practices 与公开隐私政策。[Chrome 网上应用店更新指南](https://developer.chrome.com/docs/webstore/update)
+
+| 列表语言 | 面板与红色徽章 | 自动扫描设置 |
+| :-- | :-- | :-- |
+| 简体中文 | `zh-cn-panel.png` | `zh-cn-settings.png` |
+| English | `en-us-panel.png` | `en-us-settings.png` |
+
+审核测试说明可用以下文字。
+
+```text
+Open an HTTP(S) page with site icons and click the extension icon to scan manually. Open Settings using the gear in the panel, enable automatic scanning, and approve the optional site access prompt. On an authorized page, the red badge shows the number of verified icons. A plus sign indicates that the automatic scan verified only part of the results. Turn off automatic scanning in Settings to clear the badge and revoke site access.
+```
+
 ---
 
 ## 第三部分：审核被打回怎么办

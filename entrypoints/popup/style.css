@@ -6,6 +6,7 @@
   --fh-border: #d0d7de;
   --fh-accent: #1f6feb;
   --fh-accent-hover: #1a63d4;
+  --fh-settings-hover: #eef4ff;
   --fh-warn-bg: #fff8e5;
   --fh-warn-text: #7a5c00;
   /* 棋盘格底衬两色 */
@@ -21,6 +22,7 @@
     --fh-border: #373e47;
     --fh-accent: #4493f8;
     --fh-accent-hover: #58a6ff;
+    --fh-settings-hover: #26364b;
     --fh-warn-bg: #2d2607;
     --fh-warn-text: #d9c56b;
     --fh-checker-a: #2d333b;

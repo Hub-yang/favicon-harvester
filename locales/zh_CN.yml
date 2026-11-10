@@ -18,7 +18,7 @@ retry:
 
 autoScan:
   title: 自动扫描和数量徽章
-  description: 授权后，扩展会自动扫描正在浏览的网页并显示图标数量。它只在本机保存开关，你可以随时停用。
+  description: 授权后，扩展会自动扫描当前网页并显示可用图标数量。它只在本机保存开关，你可以随时停用。
   toolbarHint: 将扩展固定到 Chrome 工具栏，就能在地址栏旁看到数量徽章。
   settings: 自动扫描设置
   enable: 授权并启用

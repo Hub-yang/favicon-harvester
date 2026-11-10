@@ -38,6 +38,7 @@ let onRemoved: Parameters<typeof fakeBrowser.tabs.onRemoved.addListener>[0]
 let onReplaced: Parameters<typeof fakeBrowser.tabs.onReplaced.addListener>[0]
 let onInstalled: Parameters<typeof browser.runtime.onInstalled.addListener>[0]
 let onMenuClicked: MenuClickListener | undefined
+let badgeColors: Parameters<typeof browser.action.setBadgeBackgroundColor>[]
 // main() 返回那一刻监听是否已挂上：service worker 被菜单点击唤醒时，晚一拍注册就会丢掉这次点击
 let menuListenerRegisteredOnMain = false
 
@@ -64,8 +65,10 @@ describe('background message handlers', () => {
     vi.spyOn(fakeBrowser.tabs.onReplaced, 'addListener').mockImplementation((fn) => {
       onReplaced = fn
     })
+    const setBadgeBackgroundColor = vi.spyOn(browser.action, 'setBadgeBackgroundColor').mockResolvedValue()
     background.main()
     menuListenerRegisteredOnMain = onMenuClicked !== undefined
+    badgeColors = setBadgeBackgroundColor.mock.calls
   })
 
   beforeEach(() => {
@@ -76,6 +79,10 @@ describe('background message handlers', () => {
   afterEach(() => {
     vi.restoreAllMocks()
     vi.clearAllMocks()
+  })
+
+  it('后台启动时为所有标签页设置红色徽章', () => {
+    expect(badgeColors).toEqual([[{ color: '#C62828' }]])
   })
 
   it('只在首次安装打开自动扫描引导，更新时不打断手动使用', async () => {

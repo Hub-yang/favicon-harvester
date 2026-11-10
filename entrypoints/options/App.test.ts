@@ -18,6 +18,15 @@ describe('自动扫描设置', () => {
   })
   afterEach(() => vi.restoreAllMocks())
 
+  it('授权说明明确可用图标数量、开关保存在本机及随时停用', async () => {
+    vi.spyOn(fakeBrowser.permissions, 'getAll').mockResolvedValue({ origins: [] })
+    const wrapper = mount(App)
+    await flushPromises()
+
+    expect(wrapper.text()).toContain('授权后，扩展会自动扫描当前网页并显示可用图标数量。它只在本机保存开关，你可以随时停用。')
+    wrapper.unmount()
+  })
+
   it('授权期间不能重复请求，拒绝后仍维持关闭', async () => {
     let finish!: (granted: boolean) => void
     const request = vi.spyOn(fakeBrowser.permissions, 'request').mockImplementation(() => new Promise(resolve => finish = resolve))

@@ -41,6 +41,7 @@ export default defineBackground(() => {
 
   const scanner = createManualIconScanner()
   const auto = createAutoScanController(scanner.rememberAuto)
+  void browser.action.setBadgeBackgroundColor({ color: '#C62828' }).catch(() => {})
 
   async function scheduleFocused(expectedTabId?: number) {
     try {
