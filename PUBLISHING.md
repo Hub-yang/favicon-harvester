@@ -2,6 +2,8 @@
 
 本文档记录「图标提取器」在 Chrome 网上应用店的首次上架、版本更新和审核处理流程。隐私政策沿用公开 GitHub Gist，商店默认语言为简体中文，并维护英文列表。
 
+当前版本状态见 [v1.0.0 送审记录](#v100-送审记录)。
+
 ## v0.5.0 上架记录
 
 v0.5.0 已通过审核。2026-11-09 核对[商店公开页](https://chromewebstore.google.com/detail/bejmkbjkhhdoimpilmolnlckhnoihpjp?hl=zh-CN)，版本字段为 `0.5.0`。正式包见 [GitHub Release](https://github.com/Hub-yang/favicon-harvester/releases/tag/v0.5.0)。下面保留本次更新现有项目的送审步骤。
@@ -246,12 +248,13 @@ git push origin :refs/tags/v<版本号>  # 删远端标签
 | v0.3.3 | 修复一处复制缺陷：多帧 ICO 复制成 `<link>` 标签时，`sizes` 原来只写最大的那一帧（如 `48x48`），现在写全它包含的每一帧（如 `16x16 32x32 48x48`）。界面没有变化 | 详细描述**无需改动**，权限没有增减，Privacy practices **无需改动**，截图**无需重截**。等 v0.3.2 审核结束后再上传本版 |
 | v0.4.0 | 新增两种打开面板的方式：快捷键 `Alt+Shift+F`（Mac 上是 `Option+Shift+F`，可在 `chrome://extensions/shortcuts` 改），以及页面空白处右键菜单里的「提取此页图标」。面板和扫描结果与点图标时完全一样。新功能，版本号选 **minor** | **Store listing 的详细描述必须更新**：中文与 English 两个语言各粘贴一次，1.2 节已改好，直接抄；名称与简短描述来自 manifest，**无需改动**。**新增 `contextMenus` 权限**，安装与更新时都没有权限警告，已装用户不会被停用。Privacy practices 要改三处：新增的 `contextMenus` 文本框填用途说明；`activeTab`、`scripting` 两段换成新写法（都按 1.2 节权限表直接抄）；单一用途说明与数据使用声明**无需改动**。⚠️ **公开 Gist 上的隐私政策要按 1.1 节同步**（只改了第一条）。截图**无需重截**（面板界面没变） |
 | v0.5.0（GitHub 与 Chrome 网上应用店均已发布） | 设置页可启用自动扫描和数量徽章，默认关闭。同页短期复用完整结果，并提供主动重新扫描 | 公开 Gist、权限与数据使用声明、中英文详细描述及截图的送审步骤见[本版上架记录](#v050-上架记录) |
+| v1.0.0（GitHub 已发布，Chrome 网上应用店审核中） | Chrome 首个稳定版，更新设置入口、授权说明、停用按钮与徽章样式 | 中英文面板和设置页截图已更新，见[本版送审记录](#v100-送审记录) |
 
-### v1.0.0 候选
+### v1.0.0 送审记录
 
 Chrome 首个稳定版。面板设置入口更容易辨认，授权说明更直接，停用按钮增加电源图标和操作反馈。工具栏徽章改为红底，部分扫描用 `N+` 表示已验证数量的下限（FH-35）。本版同时包含 Chrome 升级引导单测修正（FH-32）及原生右键菜单 E2E（FH-33）。Firefox 另行适配。
 
-送审时在现有商店项目上传已核验的 `favicon-harvester-1.0.0-chrome.zip`，分别更新中英文的面板和设置页截图。沿用 1.2 节中英文列表文案、Privacy practices 与公开隐私政策。[Chrome 网上应用店更新指南](https://developer.chrome.com/docs/webstore/update)
+2026-11-10，Hubery 确认已在现有商店项目上传[核验过的正式 ZIP](https://github.com/Hub-yang/favicon-harvester/releases/download/v1.0.0/favicon-harvester-1.0.0-chrome.zip)，并更新简体中文和英文的面板与设置页截图。开发者控制台显示「审核中」。本版沿用 1.2 节的中英文列表文案、Privacy practices 与公开隐私政策。
 
 | 列表语言 | 面板与红色徽章 | 自动扫描设置 |
 | :-- | :-- | :-- |
