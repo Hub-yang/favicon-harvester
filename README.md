@@ -111,7 +111,20 @@ utils/
   *.ts                去重、探测、尺寸测量、MIME 嗅探、命名、排序、下载
 ```
 
-每个模块都配了同名 `*.test.ts`，共 154 个用例。测试跑在 `happy-dom` 里，靠 `wxt/testing` 的 `WxtVitest()` 在内存中模拟 `browser.*` API，不需要真实浏览器。
+单测使用 `happy-dom` 和 `wxt/testing` 的 `WxtVitest()` 模拟 `browser.*` API。后台单测用 Chrome 的 `chrome_update` 事件验证浏览器升级时不会打开设置页。
+
+### 原生右键菜单 E2E
+
+在 macOS 使用 Chrome for Testing 和可操作浏览器原生菜单的桌面工具。测试使用独立的临时 profile，按名称选择「提取此页图标」，验证冷启动 worker、仅当前页获得 `activeTab`，以及 popup 展示当前页的图标。
+
+```bash
+pnpm --dir scripts/e2e install --frozen-lockfile
+pnpm build
+FH_CHROME="/绝对路径/Google Chrome for Testing.app/Contents/MacOS/Google Chrome for Testing" \
+  node scripts/e2e/native-menu.mjs
+```
+
+按[脚本开头的步骤](./scripts/e2e/native-menu.mjs#L1)操作中文原生菜单并回传结果。退出码 `0` 表示通过，`1` 表示产品断言失败，`2` 表示环境或操作失败。
 
 发布到 Chrome 网上应用店的完整流程见 [PUBLISHING.md](./PUBLISHING.md)。
 

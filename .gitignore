@@ -25,9 +25,12 @@ AGENTS.md
 # （产物 .output/layout-harness.html 已被上面的 .output 覆盖）
 scripts/gen-layout-harness.py
 
-# 发版前端到端测试（自带 puppeteer 依赖与独立 pnpm 工作区），仅本地使用，不随开源仓库分发
-# （运行产物 .output/e2e/ 已被上面的 .output 覆盖）
-scripts/e2e/
+# 仅跟踪原生右键菜单 E2E 及其独立工作区文件
+scripts/e2e/*
+!scripts/e2e/native-menu.mjs
+!scripts/e2e/package.json
+!scripts/e2e/pnpm-lock.yaml
+!scripts/e2e/pnpm-workspace.yaml
 
 # Editor directories and files
 .vscode/*

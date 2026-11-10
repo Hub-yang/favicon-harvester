@@ -111,7 +111,20 @@ utils/
   *.ts                dedupe, probe, sizing, MIME sniffing, naming, sorting, downloads
 ```
 
-Every module has a sibling `*.test.ts` — 154 cases in total. Tests run under `happy-dom` with `browser.*` faked in memory by `WxtVitest()` from `wxt/testing`, so no real browser is needed.
+Unit tests use `happy-dom` and `WxtVitest()` from `wxt/testing` to mock `browser.*`. The background tests use Chrome's `chrome_update` event to check that a browser upgrade does not open the settings page.
+
+### Native context menu E2E
+
+Run this on macOS with Chrome for Testing and a desktop tool that can operate Chrome's native menus. The test uses a fresh temporary profile. It selects the menu item by name, checks that the cold worker starts, and verifies that only the current page receives `activeTab` access and supplies the popup's icons.
+
+```bash
+pnpm --dir scripts/e2e install --frozen-lockfile
+pnpm build
+FH_CHROME="/absolute/path/Google Chrome for Testing.app/Contents/MacOS/Google Chrome for Testing" \
+  node scripts/e2e/native-menu.mjs
+```
+
+Follow the [script header](./scripts/e2e/native-menu.mjs#L1) for the Chinese-language native menu and the acknowledgments the runner expects. Exit code `0` means the test passed, `1` means a product assertion failed, and `2` means a setup or driver error.
 
 The full Chrome Web Store submission process lives in [PUBLISHING.md](./PUBLISHING.md) (written in Chinese).
 

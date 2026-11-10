@@ -1,0 +1,9 @@
+{
+  "name": "favicon-harvester-e2e",
+  "type": "module",
+  "private": true,
+  "description": "使用本机 Chrome for Testing 运行的独立 E2E 测试",
+  "dependencies": {
+    "puppeteer": "25.13.0"
+  }
+}
