@@ -36,6 +36,7 @@ type MenuClickListener = Parameters<typeof fakeBrowser.contextMenus.onClicked.ad
 let onUpdated: Parameters<typeof fakeBrowser.tabs.onUpdated.addListener>[0]
 let onRemoved: Parameters<typeof fakeBrowser.tabs.onRemoved.addListener>[0]
 let onReplaced: Parameters<typeof fakeBrowser.tabs.onReplaced.addListener>[0]
+let onInstalled: Parameters<typeof browser.runtime.onInstalled.addListener>[0]
 let onMenuClicked: MenuClickListener | undefined
 // main() 返回那一刻监听是否已挂上：service worker 被菜单点击唤醒时，晚一拍注册就会丢掉这次点击
 let menuListenerRegisteredOnMain = false
@@ -48,6 +49,9 @@ describe('background message handlers', () => {
   // main() 只注册一次消息监听；fakeBrowser 不 reset，避免清掉 messaging 的根监听导致往返失效
   beforeAll(() => {
     vi.spyOn(fakeBrowser.permissions.onRemoved, 'addListener').mockImplementation(() => {})
+    vi.spyOn(browser.runtime.onInstalled, 'addListener').mockImplementation((listener) => {
+      onInstalled = listener
+    })
     vi.spyOn(fakeBrowser.contextMenus.onClicked, 'addListener').mockImplementation((listener) => {
       onMenuClicked = listener
     })
@@ -78,11 +82,11 @@ describe('background message handlers', () => {
     vi.spyOn(fakeBrowser.contextMenus, 'create').mockReturnValue('scan-page')
     const openOptions = vi.spyOn(fakeBrowser.runtime, 'openOptionsPage').mockResolvedValue()
 
-    await fakeBrowser.runtime.onInstalled.trigger({ reason: 'update', previousVersion: '0.4.0', temporary: false })
-    await fakeBrowser.runtime.onInstalled.trigger({ reason: 'browser_update', temporary: false })
+    await onInstalled({ reason: 'update', previousVersion: '0.4.0' })
+    await onInstalled({ reason: 'chrome_update' })
     expect(openOptions).not.toHaveBeenCalled()
 
-    await fakeBrowser.runtime.onInstalled.trigger({ reason: 'install', temporary: false })
+    await onInstalled({ reason: 'install' })
     expect(openOptions).toHaveBeenCalledTimes(1)
   })
 
@@ -207,7 +211,7 @@ describe('background message handlers', () => {
     it('安装时创建「提取此页图标」菜单，只挂在页面空白处', async () => {
       const create = vi.spyOn(fakeBrowser.contextMenus, 'create').mockReturnValue('scan-page')
 
-      await fakeBrowser.runtime.onInstalled.trigger({ reason: 'install', temporary: false })
+      await onInstalled({ reason: 'install' })
 
       expect(create).toHaveBeenCalledWith({ id: 'scan-page', title: '提取此页图标', contexts: ['page'] })
     })
